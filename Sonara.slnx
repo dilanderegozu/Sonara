@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Sonara.Core/Sonara.CoreLayer.csproj" />
+  <Project Path="Sonara.DataAccessLayer/Sonara.DataAccessLayer.csproj" />
+  <Project Path="Sonara.WebApi/Sonara.WebApi.csproj" />
+  <Project Path="Sonara.WebUI/Sonara.WebUI.csproj" />
+</Solution>
