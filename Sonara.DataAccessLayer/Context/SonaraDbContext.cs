@@ -13,7 +13,7 @@ namespace Sonara.DataAccessLayer.Context
         public DbSet<MembershipPlan> MembershipPlans { get; set; }
         public DbSet<Song> Songs { get; set; }
         public DbSet<SongMembershipPlan> SongMembershipPlans { get; set; }
-        public DbSet<UserMemberShip> UserMemberShips { get; set; }
+        public DbSet<UserMembership> UserMemberships { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

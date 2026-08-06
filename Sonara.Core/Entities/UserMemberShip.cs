@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sonara.CoreLayer.Entities
 {
-    public class UserMemberShip
+    public class UserMembership
     {
         public int Id { get; set; }
 

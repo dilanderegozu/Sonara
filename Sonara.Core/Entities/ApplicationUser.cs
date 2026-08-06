@@ -8,6 +8,6 @@ namespace Sonara.CoreLayer.Entities
     public class ApplicationUser:IdentityUser
     {
         public DateTime RegisteredAt { get; set; }
-        public ICollection<UserMemberShip> UserMemberShips { get; set; }
+        public ICollection<UserMembership> UserMemberships { get; set; }
     }
 }

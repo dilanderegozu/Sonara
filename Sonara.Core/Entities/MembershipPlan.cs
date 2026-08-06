@@ -14,6 +14,6 @@ namespace Sonara.CoreLayer.Entities
     public bool HasHighQualityAudio { get; set; }
     public decimal Price { get; set; }
     public int DurationInDays { get; set; }        
-    public ICollection<UserMemberShip> UserMemberships { get; set; }
+    public ICollection<UserMembership> UserMemberships { get; set; }
 }
 }

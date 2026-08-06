@@ -4,12 +4,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sonara.CoreLayer.Entities;
 using Sonara.DataAccessLayer.Context;
+using Sonara.DataAccessLayer.Repositories.Implementations;
+using Sonara.DataAccessLayer.Repositories.Interfaces;
 using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
+builder.Services.AddScoped<IGenericDal<Artist>, GenericDal<Artist>>(); 
+builder.Services.AddScoped<ISongDal, SongDal>();
+builder.Services.AddScoped<IArtistDal, ArtistDal>();
+builder.Services.AddScoped<IAlbumDal, AlbumDal>();
+builder.Services.AddScoped<IUserMembershipDal, UserMembershipDal>();
+builder.Services.AddScoped<IMembershipPlanDal, MembershipPlanDal>();
 builder.Services.AddDbContext<SonaraDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
