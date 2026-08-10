@@ -10,7 +10,7 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
 {
     public class ArtistDal : GenericDal<Artist>, IArtistDal
     {
-        public ArtistDal(SonaraDbContext context, DbSet<Artist> dbSet) : base(context, dbSet)
+        public ArtistDal(SonaraDbContext context) : base(context)
         {
         }
 

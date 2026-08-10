@@ -1,9 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sonara.DataAccessLayer.Context;
 using Sonara.DataAccessLayer.Repositories.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sonara.DataAccessLayer.Repositories.Implementations
 {
@@ -12,10 +9,10 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
         protected readonly SonaraDbContext _context;
         protected readonly DbSet<T> _dbSet;
 
-        public GenericDal(SonaraDbContext context, DbSet<T> dbSet)
+        public GenericDal(SonaraDbContext context)
         {
             _context = context;
-            _dbSet = dbSet;
+            _dbSet = context.Set<T>();
         }
 
         public async Task<List<T>> GetAllAsync() => await _dbSet.ToListAsync();

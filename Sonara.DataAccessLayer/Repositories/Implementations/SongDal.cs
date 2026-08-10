@@ -10,7 +10,7 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
 {
     public class SongDal : GenericDal<Song>, ISongDal
     {
-        public SongDal(SonaraDbContext context, DbSet<Song> dbSet) : base(context, dbSet)
+        public SongDal(SonaraDbContext context) : base(context)
         {
         }
 

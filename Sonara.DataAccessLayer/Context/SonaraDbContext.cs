@@ -14,7 +14,7 @@ namespace Sonara.DataAccessLayer.Context
         public DbSet<Song> Songs { get; set; }
         public DbSet<SongMembershipPlan> SongMembershipPlans { get; set; }
         public DbSet<UserMembership> UserMemberships { get; set; }
-
+        public DbSet<DeviceSession> DeviceSessions { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

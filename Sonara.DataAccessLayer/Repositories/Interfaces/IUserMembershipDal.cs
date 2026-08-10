@@ -9,5 +9,6 @@ namespace Sonara.DataAccessLayer.Repositories.Interfaces
     {
         Task<UserMembership?> GetActiveMembershipByUserIdAsync(string userId);
         Task<List<UserMembership>> GetExpiredButStillActiveAsync();
+        Task<List<UserMembership>> GetAllActiveByUserIdAsync(string userId);
     }
 }

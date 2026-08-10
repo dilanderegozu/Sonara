@@ -10,7 +10,7 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
 {
     public class AlbumDal : GenericDal<Album>, IAlbumDal
     {
-        public AlbumDal(SonaraDbContext context, DbSet<Album> dbSet) : base(context, dbSet)
+        public AlbumDal(SonaraDbContext context) : base(context)
         {
         }
 

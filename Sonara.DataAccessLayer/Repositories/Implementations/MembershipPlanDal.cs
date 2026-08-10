@@ -7,7 +7,7 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
 {
     public class MembershipPlanDal : GenericDal<MembershipPlan>, IMembershipPlanDal
     {
-        public MembershipPlanDal(SonaraDbContext context, DbSet<MembershipPlan> dbSet) : base(context, dbSet)
+        public MembershipPlanDal(SonaraDbContext context) : base(context)
         {
         }
 

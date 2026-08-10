@@ -10,13 +10,18 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
 {
     public class UserMembershipDal : GenericDal<UserMembership>, IUserMembershipDal
     {
-        public UserMembershipDal(SonaraDbContext context, DbSet<UserMembership> dbSet) : base(context, dbSet)
+        public UserMembershipDal(SonaraDbContext context) : base(context)
         {
         }
 
         public async Task<UserMembership?> GetActiveMembershipByUserIdAsync(string userId)
         {
            return await _context.UserMemberships.Include(u=>u.MembershipPlan).Where(x=>x.EndDate >DateTime.UtcNow && x.UserId== userId).OrderByDescending(um => um.EndDate).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<UserMembership>> GetAllActiveByUserIdAsync(string userId)
+        {
+           return await _context.UserMemberships.Where(x=>x.UserId == userId && x.IsActive).ToListAsync();
         }
 
         public async Task<List<UserMembership>> GetExpiredButStillActiveAsync()

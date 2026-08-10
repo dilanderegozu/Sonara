@@ -1,11 +1,15 @@
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sonara.CoreLayer.Entities;
+using Sonara.CoreLayer.Interfaces;
 using Sonara.DataAccessLayer.Context;
 using Sonara.DataAccessLayer.Repositories.Implementations;
 using Sonara.DataAccessLayer.Repositories.Interfaces;
+using Sonara.WebApi.BackgroundJobs;
+using Sonara.WebApi.Services;
 using System.Security.Claims;
 using System.Text;
 
@@ -17,6 +21,8 @@ builder.Services.AddScoped<IArtistDal, ArtistDal>();
 builder.Services.AddScoped<IAlbumDal, AlbumDal>();
 builder.Services.AddScoped<IUserMembershipDal, UserMembershipDal>();
 builder.Services.AddScoped<IMembershipPlanDal, MembershipPlanDal>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IDeviceSessionDal, DeviceSessionDal>();
 builder.Services.AddDbContext<SonaraDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -25,8 +31,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
-
-    // koruma için (5 yanlış deneme -> 10 dakika kilit)
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
     options.Lockout.AllowedForNewUsers = true;
@@ -51,7 +55,7 @@ builder.Services.AddAuthentication(options =>
 
         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
-
+        
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!)),
 
@@ -86,6 +90,11 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod();
     });
 });
+builder.Services.AddHangfire(configuration =>
+{
+    configuration.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+builder.Services.AddHangfireServer(); 
 
 var app = builder.Build();
 
@@ -95,13 +104,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHangfireDashboard("/hangfire");
 app.UseHttpsRedirection();
-
 app.UseCors("AllowWebUI");
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+
+RecurringJob.AddOrUpdate<MembershipExpirationJob>(
+    "membership-expiration-check",
+    job => job.RunAsync(),
+    Cron.Daily(3)
+);
 
 app.Run();
