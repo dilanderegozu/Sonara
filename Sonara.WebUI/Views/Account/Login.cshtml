@@ -1,0 +1,370 @@
+﻿@model LoginViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonara — Giriş</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..500;1,9..144,400..500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0B0D;
+    --surface:#121319;
+    --text:#ECEAE4;
+    --text-dim:#8B8D93;
+    --accent:#6EE7D8;
+    --accent-amber:#E3A15C;
+    --line:rgba(255,255,255,0.09);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  @@media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important;}
+  }
+
+  /* ---------- Ambient waveform background ---------- */
+  .wave-field{
+    position:fixed; inset:0; z-index:0; opacity:0.5; pointer-events:none;
+  }
+  .wave-field svg{width:100%; height:100%;}
+  .wave-path{
+    fill:none; stroke:var(--text); stroke-width:1; opacity:0.14;
+    stroke-linecap:round;
+  }
+  .wave-path.accent{stroke:var(--accent); opacity:0.20;}
+  .wave-path.amber{stroke:var(--accent-amber); opacity:0.12;}
+
+  .grain{
+    position:fixed; inset:0; z-index:1; pointer-events:none; opacity:0.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Layout ---------- */
+  .stage{
+    position:relative; z-index:2;
+    min-height:100vh; display:flex; flex-direction:column;
+    padding:40px clamp(24px,6vw,96px);
+  }
+  .mark{
+    font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:0.16em;
+    color:var(--text-dim); text-transform:uppercase;
+  }
+  .mark span{color:var(--accent);}
+
+  .content{
+    flex:1; display:flex; align-items:center;
+    justify-content:flex-end; position:relative;
+  }
+  .panel{ width:100%; max-width:400px; padding-top:6vh; position:relative; z-index:3; }
+
+  /* ---------- Hero (left composition) ---------- */
+  .hero{
+    position:absolute; left:0; top:0; bottom:0; width:62%;
+    display:flex; flex-direction:column; justify-content:center;
+    pointer-events:none; z-index:1;
+  }
+  .hero-word{
+    font-family:'Fraunces',serif; font-style:italic; font-weight:340;
+    font-size:min(26vw,300px); line-height:0.82; color:transparent;
+    -webkit-text-stroke:1px rgba(236,234,228,0.16);
+    margin:0 0 0 -0.05em; white-space:nowrap; user-select:none;
+  }
+  .hero canvas{
+    width:100%; height:220px; margin-top:18px; display:block;
+  }
+  .hero-meta{
+    display:flex; gap:28px; margin-top:20px;
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em;
+    color:var(--text-dim); text-transform:uppercase;
+  }
+  .hero-meta b{color:var(--accent); font-weight:500;}
+
+  @@media (max-width:820px){
+    .hero{display:none;}
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.14em;
+    color:var(--text-dim); text-transform:uppercase; margin:0 0 18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{
+    content:''; width:22px; height:1px; background:var(--accent); display:inline-block;
+  }
+
+  h1{
+    font-family:'Fraunces',serif; font-optical-sizing:auto;
+    font-weight:420; font-style:italic; font-size:clamp(38px,4.6vw,54px);
+    line-height:1.02; margin:0 0 14px; letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--text-dim); font-size:15px; line-height:1.55; margin:0 0 40px; max-width:360px;
+  }
+
+  /* ---------- Form ---------- */
+  form{display:flex; flex-direction:column; gap:26px;}
+  .field{position:relative;}
+  .field label{
+    display:block; font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:0.12em; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px;
+  }
+  .input-row{position:relative; display:flex; align-items:center;}
+  .field input{
+    width:100%; background:transparent; border:none; border-bottom:1px solid var(--line);
+    color:var(--text); font-family:'Inter',sans-serif; font-size:16px; padding:8px 0 12px;
+    outline:none; transition:border-color .35s ease;
+  }
+  .field input::placeholder{color:#4C4E55;}
+  .field input:focus{border-color:var(--accent);}
+
+  .pulse{
+    position:absolute; left:0; right:0; bottom:-1px; height:14px;
+    display:flex; align-items:flex-end; gap:3px; pointer-events:none;
+    opacity:0; transform:translateY(4px); transition:opacity .3s ease, transform .3s ease;
+  }
+  .field input:focus ~ .pulse{opacity:1; transform:translateY(0);}
+  .pulse i{
+    width:2px; background:var(--accent); border-radius:1px;
+    animation:meter 900ms ease-in-out infinite;
+    opacity:.75;
+  }
+  .pulse i:nth-child(1){height:4px; animation-delay:0ms;}
+  .pulse i:nth-child(2){height:9px; animation-delay:90ms;}
+  .pulse i:nth-child(3){height:6px; animation-delay:180ms;}
+  .pulse i:nth-child(4){height:11px; animation-delay:270ms;}
+  .pulse i:nth-child(5){height:5px; animation-delay:360ms;}
+  .pulse i:nth-child(6){height:8px; animation-delay:450ms;}
+  .pulse i:nth-child(7){height:4px; animation-delay:540ms;}
+  @@keyframes meter{
+    0%,100%{transform:scaleY(0.5);}
+    50%{transform:scaleY(1);}
+  }
+
+  .toggle-visibility{
+    position:absolute; right:0; top:32px; background:none; border:none; cursor:pointer;
+    color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:0.08em; padding:4px; transition:color .2s;
+  }
+  .toggle-visibility:hover{color:var(--accent);}
+
+  .row-between{
+    display:flex; align-items:center; justify-content:space-between; margin-top:-6px;
+  }
+  .remember{
+    display:flex; align-items:center; gap:9px; font-size:13px; color:var(--text-dim); cursor:pointer;
+    user-select:none;
+  }
+  .remember input{appearance:none; width:14px; height:14px; border:1px solid var(--line);
+    border-radius:3px; position:relative; cursor:pointer; flex:none; margin:0;}
+  .remember input:checked{background:var(--accent); border-color:var(--accent);}
+  .remember input:checked::after{
+    content:''; position:absolute; left:4px; top:1px; width:3px; height:7px;
+    border:solid var(--bg); border-width:0 2px 2px 0; transform:rotate(40deg);
+  }
+  .forgot{color:var(--text-dim); font-size:13px; text-decoration:none; border-bottom:1px solid transparent; transition:.2s;}
+  .forgot:hover{color:var(--accent); border-color:var(--accent);}
+
+  .cta{
+    margin-top:8px; position:relative; overflow:hidden;
+    background:var(--accent); color:#06110F; border:none; border-radius:2px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:15px;
+    padding:15px 0; cursor:pointer; letter-spacing:0.01em;
+  }
+  .cta .label, .cta .bars{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    transition:transform .35s cubic-bezier(.6,0,.2,1), opacity .35s ease;
+  }
+  .cta .label{position:relative;}
+  .cta .bars{gap:4px;}
+  .cta .bars b{width:3px; background:#06110F; border-radius:1px; opacity:.85;}
+  .cta:hover .label{transform:translateY(-140%); opacity:0;}
+  .cta .bars{transform:translateY(140%); opacity:0;}
+  .cta:hover .bars{transform:translateY(0); opacity:1;}
+  .cta .bars b:nth-child(1){height:30%; animation:bar 700ms ease-in-out infinite;}
+  .cta .bars b:nth-child(2){height:70%; animation:bar 700ms ease-in-out infinite .12s;}
+  .cta .bars b:nth-child(3){height:45%; animation:bar 700ms ease-in-out infinite .24s;}
+  .cta .bars b:nth-child(4){height:85%; animation:bar 700ms ease-in-out infinite .36s;}
+  .cta .bars b:nth-child(5){height:35%; animation:bar 700ms ease-in-out infinite .48s;}
+  @@keyframes bar{0%,100%{transform:scaleY(.6);}50%{transform:scaleY(1.15);}}
+
+  .divider{
+    display:flex; align-items:center; gap:14px; margin:6px 0;
+    color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.1em;
+  }
+  .divider::before, .divider::after{content:''; flex:1; height:1px; background:var(--line);}
+
+  .social{
+    display:flex; gap:10px;
+  }
+  .social button{
+    flex:1; background:transparent; border:1px solid var(--line); color:var(--text);
+    padding:11px 0; border-radius:2px; font-family:'Inter',sans-serif; font-size:13px;
+    cursor:pointer; transition:border-color .25s, color .25s;
+  }
+  .social button:hover{border-color:var(--accent); color:var(--accent);}
+
+  .footer-link{
+    margin-top:8px; font-size:13.5px; color:var(--text-dim);
+  }
+  .footer-link a{color:var(--text); text-decoration:none; border-bottom:1px solid var(--accent);}
+
+  /* ---------- Entrance ---------- */
+  .panel > *{
+    opacity:0; transform:translateY(10px);
+    animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;
+  }
+  .eyebrow{animation-delay:.05s;}
+  h1{animation-delay:.12s;}
+  .sub{animation-delay:.2s;}
+  form{animation-delay:.28s;}
+  @@keyframes rise{to{opacity:1; transform:translateY(0);}}
+
+  @@media (max-width:820px){
+    .content{justify-content:center;}
+    .panel{max-width:420px; padding-top:0;}
+    .wave-field{opacity:0.28;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="wave-field" aria-hidden="true">
+    <svg viewBox="0 0 1200 800" preserveAspectRatio="none">
+      <path class="wave-path" d="M-50,420 C150,380 250,470 400,430 C550,390 650,500 800,440 C950,380 1050,460 1250,410" />
+      <path class="wave-path accent" d="M-50,470 C180,510 300,400 450,460 C600,520 720,440 880,480 C1020,510 1120,430 1250,470" />
+      <path class="wave-path" d="M-50,360 C200,330 320,390 470,350 C630,310 760,380 900,340 C1040,300 1150,360 1250,330" />
+      <path class="wave-path amber" d="M-50,540 C160,560 280,500 430,540 C590,580 700,510 860,550 C1000,585 1120,520 1250,555" />
+      <path class="wave-path" d="M-50,250 C220,200 340,270 500,230 C660,190 790,260 940,220 C1080,185 1180,240 1250,210" />
+    </svg>
+  </div>
+  <div class="grain"></div>
+
+  <div class="stage">
+    <div class="mark">SON<span>A</span>RA</div>
+
+    <div class="content">
+      <div class="hero" aria-hidden="true">
+        <div class="hero-word">Sonara</div>
+        <canvas id="heroWave"></canvas>
+        <div class="hero-meta">
+          <span>Signal <b>active</b></span>
+          <span>44.1 <b>kHz</b></span>
+          <span><b>∞</b> tracks</span>
+        </div>
+      </div>
+      <div class="panel">
+       
+        <h1>Sesine dön.</h1>
+        <p class="sub">Cihazların, listelerin ve kaldığın yer seni bekliyor.</p>
+
+        <form asp-action="Login" asp-controller="Account" method="post">
+       @Html.AntiForgeryToken()
+       <div asp-validation-summary="ModelOnly" style="color:#E3A15C; font-size:13px; margin-bottom:8px;"></div>
+          <div class="field">
+            <label asp-for="Email">E-posta</label>
+            <div class="input-row">
+              <input asp-for="Email" type="email" placeholder="admin@sonara.com" required>
+              <div class="pulse" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label asp-for="Password">Şifre</label>
+            <div class="input-row">
+              <input asp-for="Password" type="password" placeholder="••••••••" required>
+                            <button type="button" class="toggle-visibility" onclick="togglePw('Password')">GÖSTER</button>
+              <div class="pulse" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+          </div>
+
+          <div class="row-between">
+            <label class="remember">
+              <input asp-for="RememberMe" type="checkbox">
+              Beni hatırla
+            </label>
+            <a href="#" class="forgot">Şifremi unuttum</a>
+          </div>
+
+          <button type="submit" class="cta">
+            <span class="label">Giriş yap</span>
+            <span class="bars"><b></b><b></b><b></b><b></b><b></b></span>
+          </button>
+
+          <div class="divider">veya</div>
+
+          <div class="social">
+            <button type="button">Google</button>
+            <button type="button">Apple</button>
+          </div>
+
+          <p class="footer-link">Henüz hesabın yok mu? <a href="#">Kayıt ol</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+  (function(){
+    const canvas = document.getElementById('heroWave');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function resize(){
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const lines = [
+      { amp: 26, freq: 0.010, speed: 0.014, phase: 0,   color:'rgba(110,231,216,0.55)', width:1.4 },
+      { amp: 40, freq: 0.007, speed: 0.010, phase: 1.4, color:'rgba(236,234,228,0.30)', width:1 },
+      { amp: 16, freq: 0.017, speed: 0.020, phase: 2.7, color:'rgba(227,161,92,0.30)',  width:1 },
+    ];
+
+    let t = 0;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function draw(){
+      ctx.clearRect(0,0,w,h);
+      lines.forEach(l=>{
+        ctx.beginPath();
+        for(let x=0; x<=w; x+=4){
+          const y = h/2 + Math.sin(x*l.freq + t*l.speed + l.phase) * l.amp
+                    + Math.sin(x*l.freq*2.3 + t*l.speed*1.7) * (l.amp*0.25);
+          if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.strokeStyle = l.color;
+        ctx.lineWidth = l.width;
+        ctx.stroke();
+      });
+      t += 1;
+      if(!reduce) requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  function togglePw(){
+    const input = document.getElementById('password');
+    const btn = document.querySelector('.toggle-visibility');
+    if(input.type === 'password'){ input.type = 'text'; btn.textContent = 'GİZLE'; }
+    else { input.type = 'password'; btn.textContent = 'GÖSTER'; }
+  }
+</script>
+</body>
+</html>

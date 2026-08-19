@@ -1,0 +1,8 @@
+﻿@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<h2>Hoş geldin, @ViewBag.Email</h2>
+<form asp-action="Logout" asp-controller="Account" method="post">
+    <button type="submit">Çıkış Yap</button>
+</form>

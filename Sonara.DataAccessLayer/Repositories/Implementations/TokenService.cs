@@ -17,7 +17,7 @@ namespace Sonara.WebApi.Services
             _configuration = configuration;
         }
 
-        public Task<string> CreateTokenAsync(ApplicationUser user, MembershipPlan? activePlan)
+        public Task<string> CreateTokenAsync(ApplicationUser user, MembershipPlan? activePlan, IList<string> roles)
         {
             var claims = new List<Claim>
             {
@@ -25,7 +25,10 @@ namespace Sonara.WebApi.Services
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
                 new Claim("MembershipPlan", activePlan?.Name ?? "Free")
             };
-
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]!));
 

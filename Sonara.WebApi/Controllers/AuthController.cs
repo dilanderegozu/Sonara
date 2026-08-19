@@ -29,15 +29,15 @@ namespace Sonara.WebApi.Controllers
             _deviceSessionDal = deviceSessionDal;
             _membershipPlanDal = membershipPlanDal;
         }
-
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
-
             var user = new ApplicationUser
             {
                 UserName = dto.Email,
                 Email = dto.Email,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
                 RegisteredAt = DateTime.UtcNow
             };
 
@@ -47,9 +47,10 @@ namespace Sonara.WebApi.Controllers
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 return BadRequest(new AuthResponseDto { Success = false, ErrorMessage = errors });
             }
-            var token = await _tokenService.CreateTokenAsync(user, null);
-            return Ok(new AuthResponseDto { Success = true, Token = token });
 
+          
+            var token = await _tokenService.CreateTokenAsync(user, null, new List<string>());
+            return Ok(new AuthResponseDto { Success = true, Token = token });
         }
 
         [HttpPost("login")]
@@ -75,13 +76,13 @@ namespace Sonara.WebApi.Controllers
 
             if (existingSession is not null)
             {
-                // Zaten kayıtlı cihaz, sadece aktiviteyi güncelle
+             
                 existingSession.LastActivityDate = DateTime.UtcNow;
                 _deviceSessionDal.Update(existingSession);
             }
             else
             {
-                // Yeni cihaz — limit kontrolü yapılacak
+              
                 int maxDeviceCount;
 
                 if (activeMembership is not null)
@@ -119,9 +120,9 @@ namespace Sonara.WebApi.Controllers
             }
 
             await _deviceSessionDal.SaveChangesAsync();
-  
 
-            var token = await _tokenService.CreateTokenAsync(user, activeMembership?.MembershipPlan);
+            var roles = await _userManager.GetRolesAsync(user);
+            var token = await _tokenService.CreateTokenAsync(user, activeMembership?.MembershipPlan, roles);
 
             return Ok(new AuthResponseDto { Success = true, Token = token });
         }
