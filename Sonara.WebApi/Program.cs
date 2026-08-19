@@ -8,6 +8,7 @@ using Sonara.CoreLayer.Interfaces;
 using Sonara.DataAccessLayer.Context;
 using Sonara.DataAccessLayer.Repositories.Implementations;
 using Sonara.DataAccessLayer.Repositories.Interfaces;
+using Sonara.WebApi;
 using Sonara.WebApi.BackgroundJobs;
 using Sonara.WebApi.Services;
 using System.Security.Claims;
@@ -23,6 +24,7 @@ builder.Services.AddScoped<IUserMembershipDal, UserMembershipDal>();
 builder.Services.AddScoped<IMembershipPlanDal, MembershipPlanDal>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IDeviceSessionDal, DeviceSessionDal>();
+builder.Services.AddScoped<IDashboardDal, DashboardDal>();
 builder.Services.AddDbContext<SonaraDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -80,7 +82,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowWebUI", policy =>
@@ -116,5 +117,8 @@ RecurringJob.AddOrUpdate<MembershipExpirationJob>(
     job => job.RunAsync(),
     Cron.Daily(3)
 );
-
+using (var scope = app.Services.CreateScope())
+{
+    await SeedData.SeedAsync(scope.ServiceProvider);
+}
 app.Run();
