@@ -2,9 +2,6 @@
 using Sonara.CoreLayer.Entities;
 using Sonara.DataAccessLayer.Context;
 using Sonara.DataAccessLayer.Repositories.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sonara.DataAccessLayer.Repositories.Implementations
 {
@@ -15,18 +12,29 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
         }
 
         public async Task<List<Song>> GetSongsByArtistIdAsync(int artistId)
-        {
-           return await _context.Songs.Where(a=>a.ArtistId == artistId).ToListAsync();
-        }
+            => await _context.Songs
+                .Where(s => s.ArtistId == artistId)
+                .ToListAsync();
 
-        public Task<Song?> GetSongWithAllowedPlansAsync(int songId)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<Song?> GetSongWithAllowedPlansAsync(int songId)
+            => await _context.Songs
+                .Include(s => s.AllowedPlans)
+                    .ThenInclude(sp => sp.MembershipPlan)
+                .Include(s => s.Artist)
+                .Include(s => s.Album)
+                .FirstOrDefaultAsync(s => s.SongId == songId);
 
-        public Task<List<Song>> GetTopPlayedSongsAsync(int count)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<List<Song>> GetTopPlayedSongsAsync(int count)
+            => await _context.Songs
+                .OrderByDescending(s => s.PlayCount)
+                .Take(count)
+                .ToListAsync();
+
+        public async Task<List<Song>> GetRecentlyAddedAsync(int count)
+            => await _context.Songs
+                .Include(s => s.Artist)
+                .OrderByDescending(s => s.ReleaseDate)
+                .Take(count)
+                .ToListAsync();
     }
 }

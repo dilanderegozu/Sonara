@@ -20,10 +20,12 @@ namespace Sonara.WebUI.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            ViewBag.Email = email;
+            var jwtToken = User.FindFirstValue("JwtToken");
+            var membership = await _apiClient.GetMyMembershipAsync(jwtToken!);
+
+            ViewBag.PlanName = membership?.PlanName ?? "Free";
             return View();
         }
         [HttpGet]
@@ -52,12 +54,16 @@ namespace Sonara.WebUI.Controllers
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(result.Token);
             var isAdmin = jwtToken.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value == "Admin");
+            var firstName = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value;
 
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Email, model.Email),
-                new Claim("JwtToken", result.Token!)
-            };
+{
+    new Claim(ClaimTypes.Email, model.Email),
+    new Claim("JwtToken", result.Token!)
+};
+
+            if (!string.IsNullOrEmpty(firstName))
+                claims.Add(new Claim(ClaimTypes.GivenName, firstName));
 
             if (isAdmin)
                 claims.Add(new Claim(ClaimTypes.Role, "Admin"));
@@ -73,7 +79,7 @@ namespace Sonara.WebUI.Controllers
             if (isAdmin)
                 return RedirectToAction("Index", "Admin");
 
-            return RedirectToAction("Index", "Account");
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]
@@ -125,5 +131,7 @@ namespace Sonara.WebUI.Controllers
 
             return newId;
         }
+
+
     }
 }

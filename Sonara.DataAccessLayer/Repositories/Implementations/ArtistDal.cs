@@ -24,5 +24,12 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
         {
             return await _context.Artists.Where(a => a.IsVerified).ToListAsync();
         }
+        public async Task<List<Artist>> GetTopByListenersAsync(int count)
+        {
+            return await _context.Artists
+             .OrderByDescending(a => a.MonthlyListeners)
+             .Take(count)
+             .ToListAsync();
+        }
     }
 }

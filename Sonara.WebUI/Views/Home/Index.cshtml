@@ -1,8 +1,528 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model Sonara.WebUI.Models.HomeViewModel
+@{
+    Layout = null;
 }
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonara — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,400..500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15171D; --surface:#1B1E26; --surface-2:#232631;
+    --text:#F2F0EA; --text-dim:#9A9CA4; --text-faint:#5C5F68;
+    --accent:#6EE7D8; --accent-amber:#E3A15C;
+    --line:rgba(255,255,255,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  @@media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; animation-iteration-count:1 !important;} }
+  a{color:inherit;}
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+  /* ---------- Shell / Nav ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:20; display:flex; align-items:center;
+    justify-content:space-between; padding:20px clamp(20px,4vw,56px);
+    background:rgba(21,23,29,0.86); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .mark{font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-dim);}
+  .mark span{color:var(--accent);}
+  .nav-links{display:flex; gap:32px; font-size:13.5px; color:var(--text-dim);}
+  .nav-links a{text-decoration:none; padding-bottom:4px; border-bottom:1px solid transparent; transition:.2s;}
+  .nav-links a.active{color:var(--text); border-color:var(--accent);}
+  .nav-links a:hover{color:var(--text);}
+  .nav-right{display:flex; align-items:center; gap:18px;}
+  .search-entry{
+    display:flex; align-items:center; gap:8px; color:var(--text-faint);
+    font-size:13px; border:1px solid var(--line); padding:8px 14px; border-radius:2px;
+    cursor:pointer; transition:border-color .2s, color .2s;
+  }
+  .search-entry:hover{border-color:var(--accent); color:var(--text-dim);}
+  .avatar{
+    width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),#3E8F86);
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-style:italic;
+    font-size:14px; color:#06110F; cursor:pointer;
+  }
+
+  main{padding:0 clamp(20px,4vw,56px) 140px;}
+
+  /* ---------- Greeting / hero ---------- */
+  .greet{padding:56px 0 40px; position:relative; overflow:hidden;}
+  .greet-eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--text-dim); display:flex; align-items:center; gap:10px; margin:0 0 16px;
+  }
+  .greet-eyebrow::before{content:''; width:20px; height:1px; background:var(--accent);}
+  .greet h1{
+    font-family:'Fraunces',serif; font-style:italic; font-weight:380; font-size:clamp(30px,3.6vw,44px);
+    margin:0; line-height:1.08; max-width:640px;
+  }
+  .greet-canvas{position:absolute; right:0; top:0; bottom:0; width:38%; opacity:.4; pointer-events:none;}
+  @@media (max-width:900px){ .greet-canvas{display:none;} }
+
+  /* ---------- Section header ---------- */
+  .section{margin-bottom:52px;}
+  .section-head{
+    display:flex; align-items:baseline; justify-content:space-between; margin-bottom:20px;
+  }
+  .section-head .titles{display:flex; align-items:baseline; gap:14px;}
+  .section-head h2{
+    font-family:'Fraunces',serif; font-weight:500; font-style:normal; font-size:21px; margin:0;
+    letter-spacing:-0.01em;
+  }
+  .section-head .count{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint);}
+  .section-head .see-all{font-size:12.5px; color:var(--text-dim); text-decoration:none; border-bottom:1px solid transparent; transition:.2s;}
+  .section-head .see-all:hover{color:var(--accent); border-color:var(--accent);}
+
+  /* ---------- Horizontal scroller ---------- */
+  .scroller{
+    display:flex; gap:18px; overflow-x:auto; padding-bottom:6px; scroll-snap-type:x proximity;
+    -ms-overflow-style:none; scrollbar-width:none;
+  }
+  .scroller::-webkit-scrollbar{display:none;}
+
+  /* ---------- Music card ---------- */
+  .music-card{
+    flex:0 0 168px; scroll-snap-align:start; cursor:pointer; position:relative;
+  }
+  .art{
+    width:168px; height:168px; border-radius:2px; position:relative; overflow:hidden;
+    display:flex; align-items:flex-end; padding:12px;
+    transition:transform .3s cubic-bezier(.2,.7,.2,1);
+  }
+  .music-card:hover .art{transform:translateY(-4px);}
+  .art::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,.55) 100%);
+  }
+  .art .play{
+    position:relative; z-index:2; width:34px; height:34px; border-radius:50%;
+    background:var(--accent); display:flex; align-items:center; justify-content:center;
+    opacity:0; transform:translateY(6px); transition:opacity .25s, transform .25s;
+  }
+  .music-card:hover .art .play{opacity:1; transform:translateY(0);}
+  .art .play svg{width:12px; height:12px; fill:#06110F; margin-left:1px;}
+
+  .music-card .title{font-size:13.5px; font-weight:500; margin-top:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .music-card .meta{font-size:12px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+  .progress-wrap{margin-top:8px; height:2px; background:var(--line); border-radius:2px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--accent);}
+
+  /* ---------- Artist card (circular) ---------- */
+  .artist-card{flex:0 0 128px; scroll-snap-align:start; cursor:pointer; text-align:center;}
+  .artist-ring{
+    width:112px; height:112px; border-radius:50%; margin:0 auto; position:relative;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    transition:transform .3s cubic-bezier(.2,.7,.2,1);
+  }
+  .artist-card:hover .artist-ring{transform:translateY(-4px);}
+  .artist-card .title{font-size:13px; font-weight:500; margin-top:12px;}
+  .artist-card .meta{font-size:11.5px; color:var(--text-dim);}
+
+  /* ---------- Playlist tile (wide) ---------- */
+  .playlist-card{
+    flex:0 0 280px; scroll-snap-align:start; cursor:pointer;
+    background:var(--surface); border:1px solid var(--line); padding:16px; border-radius:2px;
+    display:flex; gap:14px; align-items:center; transition:border-color .25s, transform .3s;
+  }
+  .playlist-card:hover{border-color:var(--accent); transform:translateY(-3px);}
+  .playlist-card .mini-art{width:56px; height:56px; border-radius:2px; flex:none;}
+  .playlist-card .title{font-size:13.5px; font-weight:500;}
+  .playlist-card .meta{font-size:11.5px; color:var(--text-dim); margin-top:3px;}
+
+  /* ---------- Palettes for generated art ---------- */
+  .p1{background:linear-gradient(155deg,#2B3F3C,#17211F);}
+  .p2{background:linear-gradient(155deg,#3A2F22,#1D1815);}
+  .p3{background:linear-gradient(155deg,#28304A,#161A26);}
+  .p4{background:linear-gradient(155deg,#382F1F,#1C1811);}
+  .p5{background:linear-gradient(155deg,#22353C,#131F23);}
+  .p6{background:linear-gradient(155deg,#332538,#191219);}
+
+  /* ---------- Mood tiles ---------- */
+  .mood-tile{
+    flex:0 0 190px; height:104px; border-radius:3px; padding:16px;
+    display:flex; flex-direction:column; justify-content:flex-end; cursor:pointer;
+    position:relative; overflow:hidden; scroll-snap-align:start;
+    transition:transform .3s cubic-bezier(.2,.7,.2,1);
+  }
+  .mood-tile:hover{transform:translateY(-4px);}
+  .mood-tile .mood-title{font-family:'Fraunces',serif; font-weight:500; font-size:17px; position:relative; z-index:2; color:#0D0D0D;}
+  .mood-tile .mood-count{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:rgba(13,13,13,.62); position:relative; z-index:2; margin-top:2px;}
+  .mood-tile::after{content:''; position:absolute; right:-18px; bottom:-22px; width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,.14);}
+  .m-teal{background:#7FD9C4;}
+  .m-coral{background:#F0A08A;}
+  .m-amber{background:#F0C572;}
+  .m-lav{background:#B9AEE0;}
+  .m-olive{background:#C7CE8E;}
+  .m-sky{background:#93C6E0;}
+
+  /* ---------- Membership banner ---------- */
+  .plan-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:24px;
+    background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:20px 26px; margin-bottom:44px;
+  }
+  .plan-left{display:flex; align-items:center; gap:20px;}
+  .plan-bars{display:flex; align-items:flex-end; gap:5px; height:30px;}
+  .plan-bars i{width:6px; border-radius:1px; background:var(--line); display:block;}
+  .plan-bars i:nth-child(1){height:30%;}
+  .plan-bars i:nth-child(2){height:55%;}
+  .plan-bars i:nth-child(3){height:78%;}
+  .plan-bars i:nth-child(4){height:100%;}
+  .plan-bars i.on{background:var(--accent);}
+  .plan-info .eyebrow-sm{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim);}
+  .plan-info .plan-name{font-family:'Fraunces',serif; font-style:italic; font-weight:500; font-size:19px; margin-top:2px;}
+  .plan-info .plan-sub{font-size:12.5px; color:var(--text-dim); margin-top:3px;}
+  .plan-cta{
+    background:var(--accent); color:#0D231F; border:none; padding:11px 22px; border-radius:2px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px; cursor:pointer; white-space:nowrap;
+    transition:filter .2s;
+  }
+  .plan-cta:hover{filter:brightness(1.08);}
+  @@media (max-width:640px){ .plan-banner{flex-direction:column; align-items:flex-start;} }
+
+  /* ---------- Mini player ---------- */
+  .miniplayer{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    background:rgba(24,26,33,0.94); backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);
+    display:flex; align-items:center; gap:20px;
+    padding:12px clamp(20px,4vw,56px);
+  }
+  .mp-track{display:flex; align-items:center; gap:12px; width:240px; flex:none;}
+  .mp-art{width:44px; height:44px; border-radius:2px; flex:none;}
+  .mp-title{font-size:13px; font-weight:500;}
+  .mp-artist{font-size:11.5px; color:var(--text-dim);}
+
+  .mp-center{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; max-width:520px; margin:0 auto;}
+  .mp-controls{display:flex; align-items:center; gap:18px;}
+  .mp-controls button{background:none; border:none; color:var(--text-dim); cursor:pointer; padding:4px; display:flex;}
+  .mp-controls button:hover{color:var(--text);}
+  .mp-play{
+    width:32px; height:32px; border-radius:50%; background:var(--accent);
+    display:flex; align-items:center; justify-content:center; color:#06110F !important;
+  }
+  .mp-progress{display:flex; align-items:center; gap:8px; width:100%;}
+  .mp-progress span{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-faint);}
+  .mp-bar{flex:1; height:2px; background:var(--line); position:relative; border-radius:2px;}
+  .mp-bar i{position:absolute; left:0; top:0; bottom:0; width:38%; background:var(--accent); border-radius:2px;}
+
+  .mp-right{width:240px; flex:none; display:flex; justify-content:flex-end; align-items:center; gap:16px;}
+  .mp-wave{display:flex; align-items:flex-end; gap:2px; height:16px;}
+  .mp-wave i{width:2px; background:var(--accent); border-radius:1px; animation:mpwave 1s ease-in-out infinite;}
+  .mp-wave i:nth-child(1){height:5px; animation-delay:0ms;}
+  .mp-wave i:nth-child(2){height:12px; animation-delay:120ms;}
+  .mp-wave i:nth-child(3){height:8px; animation-delay:240ms;}
+  .mp-wave i:nth-child(4){height:14px; animation-delay:360ms;}
+  .mp-wave i:nth-child(5){height:6px; animation-delay:480ms;}
+  @@keyframes mpwave{0%,100%{transform:scaleY(.5);}50%{transform:scaleY(1);}}
+
+  /* ---------- Entrance ---------- */
+  .section, .greet{opacity:0; transform:translateY(12px); animation:rise .6s cubic-bezier(.2,.7,.2,1) forwards;}
+  .greet{animation-delay:.02s;}
+  .section:nth-of-type(1){animation-delay:.08s;}
+  .section:nth-of-type(2){animation-delay:.13s;}
+  .section:nth-of-type(3){animation-delay:.18s;}
+  .section:nth-of-type(4){animation-delay:.23s;}
+  .section:nth-of-type(5){animation-delay:.28s;}
+  .section:nth-of-type(6){animation-delay:.33s;}
+  @@keyframes rise{to{opacity:1; transform:translateY(0);}}
+
+  @@media (max-width:720px){
+    .nav-links{display:none;}
+    .mp-track{width:auto; flex:1;}
+    .mp-center{display:none;}
+    .mp-right{width:auto;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div style="display:flex; align-items:center; gap:48px;">
+      <div class="mark">SON<span>A</span>RA</div>
+      <div class="nav-links">
+        <a href="#" class="active">Keşfet</a>
+        <a href="#">Kütüphane</a>
+        <a href="#">Sanatçılar</a>
+        <a href="#">Türler</a>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="search-entry">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Ara
+      </div>
+      <div class="avatar">@Model.FirstName[0]</div>
+    </div>
+  </div>
+
+  <main>
+    <div class="greet">
+      <canvas class="greet-canvas" id="greetWave"></canvas>
+      
+            <h1>@Model.Greeting, @Model.FirstName. Kaldığın yerden devam edelim mi?</h1>
+    </div>
+
+        <div class="plan-banner">
+            <div class="plan-left">
+                <div style="width:100px; height:4px; background:var(--line); border-radius:2px; overflow:hidden;">
+                    <div style="height:100%; width:@(Model.PlanLevel * 100 / Model.MaxPlanLevel)%; background:var(--accent);"></div>
+                </div>
+                <div class="plan-info">
+                    <div class="eyebrow-sm">Mevcut paket</div>
+                    <div class="plan-name">@Model.PlanName</div>
+                    <div class="plan-sub">
+                        @if (Model.PlanLevel < Model.MaxPlanLevel)
+                        {
+                            <text>Bir üst pakette daha fazla özellik seni bekliyor.</text>
+                        }
+                        else
+                        {
+                            <text>En üst pakettesin — tüm özellikler açık.</text>
+                        }
+                    </div>
+                </div>
+            </div>
+            <a asp-controller="Packages" asp-action="Index" class="plan-cta" style="text-decoration:none; display:inline-block;">Paketini yükselt</a>
+        </div>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="titles"><h2>Ruh haline göre</h2></div>
+        <a href="#" class="see-all">Tümünü gör</a>
+      </div>
+      <div class="scroller">
+        <div class="mood-tile m-teal"><div class="mood-title">Odaklan</div><div class="mood-count">18 koleksiyon</div></div>
+        <div class="mood-tile m-coral"><div class="mood-title">Enerji</div><div class="mood-count">24 koleksiyon</div></div>
+        <div class="mood-tile m-amber"><div class="mood-title">Gün Batımı</div><div class="mood-count">12 koleksiyon</div></div>
+        <div class="mood-tile m-lav"><div class="mood-title">Sakinleş</div><div class="mood-count">21 koleksiyon</div></div>
+        <div class="mood-tile m-olive"><div class="mood-title">Yol Modu</div><div class="mood-count">16 koleksiyon</div></div>
+        <div class="mood-tile m-sky"><div class="mood-title">Yağmurlu</div><div class="mood-count">9 koleksiyon</div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="titles"><h2>Dinlemeye devam et</h2><span class="count">04</span></div>
+        <a href="#" class="see-all">Tümünü gör</a>
+      </div>
+      <div class="scroller">
+        <div class="music-card">
+          <div class="art p1"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Kırık Aynalar</div>
+          <div class="meta">Nehir · Album</div>
+          <div class="progress-wrap"><div class="progress-fill" style="width:64%"></div></div>
+        </div>
+        <div class="music-card">
+          <div class="art p2"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Sahil Notları</div>
+          <div class="meta">Kıyı Kolektifi</div>
+          <div class="progress-wrap"><div class="progress-fill" style="width:22%"></div></div>
+        </div>
+        <div class="music-card">
+          <div class="art p3"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Gece Treni</div>
+          <div class="meta">Metroline</div>
+          <div class="progress-wrap"><div class="progress-fill" style="width:88%"></div></div>
+        </div>
+        <div class="music-card">
+          <div class="art p5"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Yankı Odası EP</div>
+          <div class="meta">Toprak Ana</div>
+          <div class="progress-wrap"><div class="progress-fill" style="width:41%"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="titles"><h2>Sana özel mix</h2><span class="count">Haftalık</span></div>
+        <a href="#" class="see-all">Tümünü gör</a>
+      </div>
+      <div class="scroller">
+        <div class="music-card">
+          <div class="art p4"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Alacakaranlık Karışımı</div>
+          <div class="meta">42 parça</div>
+        </div>
+        <div class="music-card">
+          <div class="art p6"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Sakin Frekans</div>
+          <div class="meta">31 parça</div>
+        </div>
+        <div class="music-card">
+          <div class="art p1"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Şehir Ritmi</div>
+          <div class="meta">28 parça</div>
+        </div>
+        <div class="music-card">
+          <div class="art p3"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Odak Modu</div>
+          <div class="meta">55 parça</div>
+        </div>
+        <div class="music-card">
+          <div class="art p2"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Yağmur Günleri</div>
+          <div class="meta">19 parça</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="titles"><h2>Popüler sanatçılar</h2></div>
+        <a href="#" class="see-all">Tümünü gör</a>
+      </div>
+      <div class="scroller">
+        <div class="artist-card">
+          <div class="artist-ring p5"></div>
+          <div class="title">Nehir</div>
+          <div class="meta">2.4M dinleyici</div>
+        </div>
+        <div class="artist-card">
+          <div class="artist-ring p2"></div>
+          <div class="title">Metroline</div>
+          <div class="meta">1.1M dinleyici</div>
+        </div>
+        <div class="artist-card">
+          <div class="artist-ring p6"></div>
+          <div class="title">Toprak Ana</div>
+          <div class="meta">870K dinleyici</div>
+        </div>
+        <div class="artist-card">
+          <div class="artist-ring p3"></div>
+          <div class="title">Kıyı Kolektifi</div>
+          <div class="meta">640K dinleyici</div>
+        </div>
+        <div class="artist-card">
+          <div class="artist-ring p4"></div>
+          <div class="title">Sisli Tepe</div>
+          <div class="meta">410K dinleyici</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="titles"><h2>Son oluşturulan playlistler</h2></div>
+        <a href="#" class="see-all">Tümünü gör</a>
+      </div>
+      <div class="scroller">
+        <div class="playlist-card">
+          <div class="mini-art p1"></div>
+          <div><div class="title">Sabah Rutini</div><div class="meta">Sen · 18 parça</div></div>
+        </div>
+        <div class="playlist-card">
+          <div class="mini-art p6"></div>
+          <div><div class="title">Konsantrasyon</div><div class="meta">Sen · 34 parça</div></div>
+        </div>
+        <div class="playlist-card">
+          <div class="mini-art p5"></div>
+          <div><div class="title">Yol Notları</div><div class="meta">Sen · 22 parça</div></div>
+        </div>
+        <div class="playlist-card">
+          <div class="mini-art p4"></div>
+          <div><div class="title">Akşam Sarmalı</div><div class="meta">Sen · 27 parça</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="titles"><h2>Son eklenenler</h2></div>
+        <a href="#" class="see-all">Tümünü gör</a>
+      </div>
+      <div class="scroller">
+        <div class="music-card">
+          <div class="art p3"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Işık Katmanları</div>
+          <div class="meta">Sisli Tepe</div>
+        </div>
+        <div class="music-card">
+          <div class="art p1"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Derin Sessizlik</div>
+          <div class="meta">Nehir</div>
+        </div>
+        <div class="music-card">
+          <div class="art p2"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Kum Saati</div>
+          <div class="meta">Toprak Ana</div>
+        </div>
+        <div class="music-card">
+          <div class="art p5"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <div class="title">Uzak Sinyal</div>
+          <div class="meta">Metroline</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="miniplayer">
+    <div class="mp-track">
+      <div class="mp-art p1"></div>
+      <div>
+        <div class="mp-title">Kırık Aynalar</div>
+        <div class="mp-artist">Nehir</div>
+      </div>
+    </div>
+    <div class="mp-center">
+      <div class="mp-controls">
+        <button title="Karıştır"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
+        <button title="Önceki"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 6L9 12l11 6z"/></svg></button>
+        <button class="mp-play" title="Duraklat"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
+        <button title="Sonraki"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM4 6l11 6-11 6z"/></svg></button>
+        <button title="Tekrarla"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
+      </div>
+      <div class="mp-progress">
+        <span>1:42</span>
+        <div class="mp-bar"><i></i></div>
+        <span>4:29</span>
+      </div>
+    </div>
+    <div class="mp-right">
+      <div class="mp-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <button title="Kuyruk" style="background:none;border:none;color:var(--text-dim);cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h9M3 18h13M17 4v10M17 4l-3 3M17 4l3 3"/></svg></button>
+    </div>
+  </div>
+
+<script>
+  (function(){
+    const canvas = document.getElementById('greetWave');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w,h,dpr=Math.min(window.devicePixelRatio||1,2);
+    function resize(){ w=canvas.clientWidth; h=canvas.clientHeight; canvas.width=w*dpr; canvas.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+    canvas.style.width='100%'; canvas.style.height='160px';
+    window.addEventListener('resize', resize); resize();
+    const lines=[
+      {amp:20,freq:.012,speed:.012,phase:0,color:'rgba(110,231,216,.35)'},
+      {amp:30,freq:.008,speed:.009,phase:1.6,color:'rgba(236,234,228,.16)'},
+    ];
+    let t=0; const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function draw(){
+      ctx.clearRect(0,0,w,h);
+      lines.forEach(l=>{
+        ctx.beginPath();
+        for(let x=0;x<=w;x+=4){
+          const y=h/2+Math.sin(x*l.freq+t*l.speed+l.phase)*l.amp;
+          if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.strokeStyle=l.color; ctx.lineWidth=1.2; ctx.stroke();
+      });
+      t+=1; if(!reduce) requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+</script>
+</body>
+</html>

@@ -23,6 +23,7 @@ namespace Sonara.WebApi.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                 new Claim(ClaimTypes.GivenName, user.FirstName ?? string.Empty),
                 new Claim("MembershipPlan", activePlan?.Name ?? "Free")
             };
             foreach (var role in roles)

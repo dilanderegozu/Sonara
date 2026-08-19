@@ -10,5 +10,6 @@ namespace Sonara.DataAccessLayer.Repositories.Interfaces
         Task<List<Song>> GetSongsByArtistIdAsync(int artistId);
         Task<Song?> GetSongWithAllowedPlansAsync(int songId);
         Task<List<Song>> GetTopPlayedSongsAsync(int count);
+        Task<List<Song>> GetRecentlyAddedAsync(int count);
     }
 }
