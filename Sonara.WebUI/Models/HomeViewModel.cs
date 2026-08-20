@@ -13,5 +13,7 @@ namespace Sonara.WebUI.Models
         public string Greeting { get; set; }
         public List<PlaylistDto> Playlists { get; set; } = new();
         public List<ContinueListeningDto> ContinueListening { get; set; } = new();
+        public List<MoodDto> Moods { get; set; } = new();
+        public List<RecommendedSongDto> Recommendations { get; set; } = new();
     }
 }

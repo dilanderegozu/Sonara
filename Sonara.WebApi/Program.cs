@@ -29,6 +29,7 @@ builder.Services.AddScoped<IDashboardDal, DashboardDal>();
 builder.Services.AddScoped<IPlaylistDal, PlaylistDal>();
 builder.Services.AddScoped<IPlaybackHistoryDal, PlaybackHistoryDal>();
 builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<IMoodDal, MoodDal>();
 builder.Services.AddDbContext<SonaraDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 

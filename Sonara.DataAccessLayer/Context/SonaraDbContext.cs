@@ -18,6 +18,8 @@ namespace Sonara.DataAccessLayer.Context
         public DbSet<Playlist> Playlists { get; set; }
         public DbSet<PlaylistSong> PlaylistSongs { get; set; }
         public DbSet<PlaybackHistory> PlaybackHistories { get; set; }
+        public DbSet<Mood> Moods { get; set; }
+        public DbSet<SongMood> SongMoods { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -53,8 +55,20 @@ namespace Sonara.DataAccessLayer.Context
             .HasForeignKey(ps => ps.SongId);
 
             builder.Entity<PlaybackHistory>()
-    .HasIndex(ph => new { ph.UserId, ph.SongId })
-    .IsUnique();
+            .HasIndex(ph => new { ph.UserId, ph.SongId })
+            .IsUnique();
+
+            builder.Entity<SongMood>()
+                .HasKey(s => new { s.SongId, s.MoodId });
+
+            builder.Entity<SongMood>()
+                .HasOne(s => s.Song)
+                .WithMany()
+                .HasForeignKey(s => s.SongId);
+            builder.Entity<SongMood>()
+            .HasOne(sm => sm.Mood)
+            .WithMany(m => m.Songs)
+            .HasForeignKey(sm => sm.MoodId);
         }
     }
 }

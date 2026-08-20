@@ -50,5 +50,80 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
                 .OrderByDescending(s => s.ReleaseDate)
                 .Take(count)
                 .ToListAsync();
+
+        public async Task AddMoodsAsync(int songId, List<int> moodIds)
+        {
+            foreach (var moodId in moodIds)
+            {
+                _context.SongMoods.Add(new SongMood { SongId = songId, MoodId = moodId });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Song>> GetRecommendedForUserAsync(string userId, int count)
+        {
+            // 1. Kullanıcının dinlediği şarkıların mood'larını bul (SongMoods tablosu üzerinden)
+            var listenedSongIds = await _context.PlaybackHistories
+                .Where(ph => ph.UserId == userId)
+                .Select(ph => ph.SongId)
+                .ToListAsync();
+
+            var listenedMoodIds = await _context.SongMoods
+                .Where(sm => listenedSongIds.Contains(sm.SongId))
+                .Select(sm => sm.MoodId)
+                .Distinct()
+                .ToListAsync();
+
+            List<Song> recommendations;
+
+            if (listenedMoodIds.Any())
+            {
+                var candidateSongIds = await _context.SongMoods
+                    .Where(sm => listenedMoodIds.Contains(sm.MoodId) && !listenedSongIds.Contains(sm.SongId))
+                    .Select(sm => sm.SongId)
+                    .Distinct()
+                    .ToListAsync();
+
+                recommendations = await _context.Songs
+                    .Include(s => s.Artist)
+                    .Where(s => candidateSongIds.Contains(s.SongId))
+                    .OrderByDescending(s => s.PlayCount)
+                    .Take(count)
+                    .ToListAsync();
+            }
+            else
+            {
+                recommendations = new List<Song>();
+            }
+
+            if (recommendations.Count < count)
+            {
+                var excludeIds = recommendations.Select(s => s.SongId).Concat(listenedSongIds).ToList();
+
+                var fallback = await _context.Songs
+                    .Include(s => s.Artist)
+                    .Where(s => !excludeIds.Contains(s.SongId))
+                    .OrderByDescending(s => s.PlayCount)
+                    .Take(count - recommendations.Count)
+                    .ToListAsync();
+
+                recommendations.AddRange(fallback);
+            }
+
+            return recommendations;
+        }
+
+        public async Task<List<Song>> GetAllWithArtistAsync()
+        {
+            return await _context.Songs.Include(s => s.Artist).ToListAsync();
+        }
+
+        public async Task<List<Song>> GetByArtistIdAsync(int artistId)
+        {
+            return await _context.Songs
+                .Where(s => s.ArtistId == artistId)
+                .ToListAsync();
+        }
     }
 }

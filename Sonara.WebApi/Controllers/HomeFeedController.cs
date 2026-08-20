@@ -18,8 +18,9 @@ namespace Sonara.WebApi.Controllers
         private readonly IMembershipPlanDal _membershipPlanDal;
         private readonly IPlaylistDal _playlistDal;
         private readonly IPlaybackHistoryDal _playbackHistoryDal;
+        private readonly IMoodDal _moodDal;
 
-        public HomeFeedController(ISongDal songDal, IArtistDal artistDal, IUserMembershipDal userMembershipDal, IMembershipPlanDal membershipPlanDal, IPlaylistDal playlistDal, IPlaybackHistoryDal playbackHistoryDal)
+        public HomeFeedController(ISongDal songDal, IArtistDal artistDal, IUserMembershipDal userMembershipDal, IMembershipPlanDal membershipPlanDal, IPlaylistDal playlistDal, IPlaybackHistoryDal playbackHistoryDal, IMoodDal moodDal)
         {
             _songDal = songDal;
             _artistDal = artistDal;
@@ -27,6 +28,98 @@ namespace Sonara.WebApi.Controllers
             _membershipPlanDal = membershipPlanDal;
             _playlistDal = playlistDal;
             _playbackHistoryDal = playbackHistoryDal;
+            _moodDal = moodDal;
+        }
+
+        [HttpGet("all-artists")]
+        public async Task<IActionResult> GetAllArtists()
+        {
+            var artists = await _artistDal.GetAllAsync();
+
+            var result = artists.Select(a => new
+            {
+                a.ArtistId,
+                a.Name,
+                a.MonthlyListeners,
+                a.ImageUrl
+            });
+
+            return Ok(result);
+        }
+        [HttpGet("all-songs")]
+        public async Task<IActionResult> GetAllSongs()
+        {
+            var songs = await _songDal.GetAllWithArtistAsync();
+
+            var result = songs.Select(s => new
+            {
+                s.SongId,
+                s.Title,
+                s.ArtistId,
+                s.PlayCount,
+                ArtistName = s.Artist.Name,
+                s.CoverImageUrl
+            });
+
+            return Ok(result);
+        }
+
+        [HttpGet("artists/{artistId}/songs")]
+        public async Task<IActionResult> GetSongsByArtist(int artistId)
+        {
+            var songs = await _songDal.GetByArtistIdAsync(artistId);
+            var artist = await _artistDal.GetByIdAsync(artistId);
+
+            if (artist is null) return NotFound();
+
+            var result = new
+            {
+                artist.ArtistId,
+                artist.Name,
+                artist.ImageUrl,
+                Songs = songs.Select(s => new
+                {
+                    s.SongId,
+                    s.Title,
+                    s.CoverImageUrl
+                })
+            };
+
+            return Ok(result);
+        }
+        [HttpGet("moods")]
+        public async Task<IActionResult> GetMoods()
+        {
+            var moods = await _moodDal.GetAllWithSongCountAsync();
+
+            var result = moods.Select(m => new
+            {
+                m.MoodId,
+                m.Name,
+                m.ColorHex,
+                SongCount = m.Songs.Count
+            });
+
+            return Ok(result);
+        }
+        [HttpGet("all-playlists")]
+        public async Task<IActionResult> GetAllPlaylists()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId is null) return Unauthorized();
+
+            var playlists = await _playlistDal.GetByUserIdAsync(userId);
+
+            var result = playlists.Select(p => new
+            {
+                p.PlaylistId,
+                p.Name,
+                SongCount = p.Songs.Count,
+                p.CoverImageUrl,
+                p.CreatedDate
+            });
+
+            return Ok(result);
         }
 
         [HttpGet("continue-listening")]
@@ -114,8 +207,50 @@ namespace Sonara.WebApi.Controllers
             {
                 p.PlaylistId,
                 p.Name,
+                p.CoverImageUrl,
                 SongCount = p.Songs.Count
             });
+
+            return Ok(result);
+        }
+        [HttpGet("recommendations")]
+        public async Task<IActionResult> GetRecommendations([FromQuery] int count = 5)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId is null) return Unauthorized();
+
+            var songs = await _songDal.GetRecommendedForUserAsync(userId, count);
+
+            var result = songs.Select(s => new
+            {
+                s.SongId,
+                s.Title,
+                ArtistName = s.Artist.Name,
+                s.CoverImageUrl
+            });
+
+            return Ok(result);
+        }
+
+        [HttpGet("moods/{moodId}")]
+        public async Task<IActionResult> GetMoodDetail(int moodId)
+        {
+            var mood = await _moodDal.GetWithSongsAsync(moodId);
+            if (mood is null) return NotFound();
+
+            var result = new
+            {
+                mood.MoodId,
+                mood.Name,
+                mood.ColorHex,
+                Songs = mood.Songs.Select(sm => new
+                {
+                    sm.Song.SongId,
+                    sm.Song.Title,
+                    ArtistName = sm.Song.Artist.Name,
+                    sm.Song.CoverImageUrl
+                })
+            };
 
             return Ok(result);
         }

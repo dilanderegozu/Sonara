@@ -1,0 +1,600 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonara — Sesin frekansı seninle değişir.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,400..500&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+            :root {
+                --bg: #0B0710;
+                --text: #FFFFFF;
+                --text-dim: rgba(255,255,255,.68);
+                --text-faint: rgba(255,255,255,.42);
+                --accent: #C64BFF;
+                --accent-2: #FF6FA0;
+                --accent-3: #6EE7D8;
+                --line: rgba(255,255,255,0.14);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: 'Inter',sans-serif;
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            @@media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: .001ms !important;
+                    animation-iteration-count: 1 !important;
+                }
+            }
+
+            .topbar {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 20;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 26px clamp(20px,4vw,60px);
+            }
+
+            .mark {
+                font-family: 'Inter',sans-serif;
+                font-weight: 800;
+                font-size: 19px;
+                letter-spacing: -0.02em;
+            }
+
+            .nav-actions {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .btn-ghost-nav {
+                font-size: 14px;
+                font-weight: 500;
+                color: rgba(255,255,255,.85);
+                transition: color .2s;
+            }
+
+                .btn-ghost-nav:hover {
+                    color: #fff;
+                }
+
+            .btn-solid-nav {
+                font-size: 13.5px;
+                font-weight: 700;
+                color: #fff;
+                background: linear-gradient(135deg, var(--accent), var(--accent-2));
+                padding: 10px 22px;
+                border-radius: 999px;
+                transition: transform .2s, box-shadow .2s;
+                box-shadow: 0 8px 24px -8px rgba(198,75,255,.6);
+            }
+
+                .btn-solid-nav:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 12px 30px -8px rgba(198,75,255,.75);
+                }
+
+            /* ---------- Hero ---------- */
+            .hero {
+                position: relative;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                padding: 120px clamp(20px,4vw,60px) 80px;
+                overflow: hidden;
+            }
+
+            .hero-bg {
+                position: absolute;
+                inset: 0;
+                z-index: 0;
+                background: radial-gradient(ellipse 70% 60% at 75% 20%, rgba(198,75,255,.55), transparent 60%), radial-gradient(ellipse 60% 55% at 30% 75%, rgba(255,111,160,.45), transparent 60%), radial-gradient(ellipse 50% 50% at 85% 80%, rgba(110,231,216,.30), transparent 60%), linear-gradient(180deg, #150B22 0%, #0B0710 65%);
+            }
+
+                .hero-bg .blob {
+                    position: absolute;
+                    border-radius: 50%;
+                    filter: blur(70px);
+                    opacity: .55;
+                    animation: float 14s ease-in-out infinite;
+                }
+
+            .blob1 {
+                width: 420px;
+                height: 420px;
+                background: #B23BFF;
+                top: -8%;
+                right: 8%;
+                animation-delay: 0s;
+            }
+
+            .blob2 {
+                width: 340px;
+                height: 340px;
+                background: #FF6FA0;
+                bottom: -6%;
+                left: 6%;
+                animation-delay: 3s;
+            }
+
+            .blob3 {
+                width: 260px;
+                height: 260px;
+                background: #6EE7D8;
+                bottom: 14%;
+                right: 22%;
+                animation-delay: 6s;
+            }
+
+            @@keyframes float {
+                0%, 100% {
+                    transform: translate(0,0) scale(1);
+                }
+
+                50% {
+                    transform: translate(-20px,26px) scale(1.06);
+                }
+            }
+
+            .hero-noise {
+                position: absolute;
+                inset: 0;
+                z-index: 1;
+                opacity: .05;
+                mix-blend-mode: overlay;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            }
+
+            .hero-content {
+                position: relative;
+                z-index: 5;
+                max-width: 760px;
+            }
+
+            .hero-eyebrow {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 12.5px;
+                font-weight: 600;
+                letter-spacing: .06em;
+                text-transform: uppercase;
+                color: rgba(255,255,255,.85);
+                background: rgba(255,255,255,.08);
+                border: 1px solid rgba(255,255,255,.16);
+                padding: 8px 16px;
+                border-radius: 999px;
+                margin-bottom: 32px;
+                backdrop-filter: blur(6px);
+            }
+
+                .hero-eyebrow i {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background: var(--accent-3);
+                    display: inline-block;
+                }
+
+            .hero h1 {
+                font-family: 'Inter',sans-serif;
+                font-weight: 800;
+                letter-spacing: -0.03em;
+                font-size: clamp(42px,7.2vw,84px);
+                line-height: 1.03;
+                margin: 0 0 26px;
+            }
+
+                .hero h1 .grad {
+                    background: linear-gradient(100deg, var(--accent-2), var(--accent), var(--accent-3));
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    color: transparent;
+                }
+
+            .hero p.lead {
+                font-size: 17px;
+                line-height: 1.65;
+                color: var(--text-dim);
+                max-width: 480px;
+                margin: 0 0 44px;
+            }
+
+            .hero-ctas {
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                flex-wrap: wrap;
+            }
+
+            .btn-primary-lg {
+                background: linear-gradient(135deg, var(--accent), var(--accent-2));
+                color: #fff;
+                font-weight: 700;
+                font-size: 15px;
+                padding: 17px 34px;
+                border-radius: 999px;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                box-shadow: 0 14px 34px -10px rgba(198,75,255,.65);
+                transition: transform .2s, box-shadow .2s;
+            }
+
+                .btn-primary-lg:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 18px 40px -8px rgba(198,75,255,.8);
+                }
+
+            .btn-outline-lg {
+                border: 1px solid rgba(255,255,255,.25);
+                color: #fff;
+                font-weight: 600;
+                font-size: 15px;
+                padding: 17px 34px;
+                border-radius: 999px;
+                backdrop-filter: blur(6px);
+                transition: border-color .2s, background .2s;
+            }
+
+                .btn-outline-lg:hover {
+                    border-color: rgba(255,255,255,.55);
+                    background: rgba(255,255,255,.06);
+                }
+
+            /* ---------- Sanatçılar ---------- */
+            .artists-section {
+                position: relative;
+                z-index: 5;
+                padding: clamp(70px,9vw,120px) clamp(20px,4vw,60px);
+                background: #0B0710;
+            }
+
+            .artists-head {
+                max-width: 640px;
+                margin: 0 auto 60px;
+                text-align: center;
+            }
+
+                .artists-head .eyebrow-sm {
+                    font-size: 12.5px;
+                    font-weight: 700;
+                    letter-spacing: .1em;
+                    text-transform: uppercase;
+                    background: linear-gradient(100deg, var(--accent-2), var(--accent));
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    color: transparent;
+                    margin: 0 0 18px;
+                }
+
+                .artists-head h2 {
+                    font-family: 'Fraunces',serif;
+                    font-style: italic;
+                    font-weight: 500;
+                    font-size: clamp(28px,3.6vw,40px);
+                    margin: 0 0 18px;
+                    line-height: 1.1;
+                    color: #fff;
+                }
+
+                .artists-head p {
+                    font-size: 15px;
+                    color: var(--text-dim);
+                    line-height: 1.65;
+                    margin: 0;
+                }
+
+            .artist-showcase {
+                display: grid;
+                grid-template-columns: repeat(6, 1fr);
+                gap: 24px;
+                max-width: 1000px;
+                margin: 0 auto;
+            }
+
+            .artist-orb {
+                aspect-ratio: 1/1;
+                border-radius: 50%;
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform .35s cubic-bezier(.2,.7,.2,1);
+                box-shadow: 0 20px 40px -20px rgba(0,0,0,.6);
+            }
+
+                .artist-orb:hover {
+                    transform: translateY(-8px) scale(1.04);
+                }
+
+                .artist-orb svg {
+                    opacity: .65;
+                }
+
+            .o1 {
+                background: radial-gradient(circle at 30% 25%, #E884FF, #7C22C4);
+            }
+
+            .o2 {
+                background: radial-gradient(circle at 30% 25%, #FF9BC0, #C42A6C);
+            }
+
+            .o3 {
+                background: radial-gradient(circle at 30% 25%, #8FF0E4, #1D8A7C);
+            }
+
+            .o4 {
+                background: radial-gradient(circle at 30% 25%, #FFC98A, #C4691D);
+            }
+
+            .o5 {
+                background: radial-gradient(circle at 30% 25%, #A6B0FF, #3E44C4);
+            }
+
+            .o6 {
+                background: radial-gradient(circle at 30% 25%, #FF8FA0, #C42A46);
+            }
+
+            @@media (max-width:760px) {
+                .artist-showcase {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+
+            .artists-cta {
+                text-align: center;
+                margin-top: 60px;
+            }
+
+            /* ---------- Özellikler ---------- */
+            .features-section {
+                padding: clamp(70px,9vw,120px) clamp(20px,4vw,60px);
+                background: #0B0710;
+                border-top: 1px solid var(--line);
+            }
+
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+                max-width: 1080px;
+                margin: 0 auto;
+            }
+
+            .feature-card {
+                background: linear-gradient(155deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+                border: 1px solid var(--line);
+                border-radius: 18px;
+                padding: 36px 30px;
+                transition: transform .3s, border-color .3s;
+            }
+
+                .feature-card:hover {
+                    transform: translateY(-4px);
+                    border-color: rgba(255,255,255,.28);
+                }
+
+                .feature-card .f-icon {
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 12px;
+                    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 22px;
+                }
+
+                    .feature-card .f-icon svg {
+                        stroke: #fff;
+                        width: 18px;
+                        height: 18px;
+                    }
+
+                .feature-card h3 {
+                    font-family: 'Inter',sans-serif;
+                    font-weight: 700;
+                    font-size: 18px;
+                    margin: 0 0 10px;
+                    color: #fff;
+                }
+
+                .feature-card p {
+                    font-size: 13.5px;
+                    color: var(--text-dim);
+                    line-height: 1.65;
+                    margin: 0;
+                }
+
+            @@media (max-width:760px) {
+                .features-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* ---------- Footer ---------- */
+            .footer {
+                padding: 44px clamp(20px,4vw,60px);
+                border-top: 1px solid var(--line);
+                background: #0B0710;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+
+                .footer .foot-note {
+                    font-size: 12px;
+                    color: var(--text-faint);
+                    font-family: 'JetBrains Mono',monospace;
+                }
+
+            .hero-content, .artists-head, .artist-orb, .feature-card {
+                opacity: 0;
+                transform: translateY(16px);
+                animation: rise .8s cubic-bezier(.2,.7,.2,1) forwards;
+            }
+
+            .hero-content {
+                animation-delay: .1s;
+            }
+
+            .artists-head {
+                animation-delay: .05s;
+            }
+
+            .artist-orb:nth-child(1) {
+                animation-delay: .06s;
+            }
+
+            .artist-orb:nth-child(2) {
+                animation-delay: .10s;
+            }
+
+            .artist-orb:nth-child(3) {
+                animation-delay: .14s;
+            }
+
+            .artist-orb:nth-child(4) {
+                animation-delay: .18s;
+            }
+
+            .artist-orb:nth-child(5) {
+                animation-delay: .22s;
+            }
+
+            .artist-orb:nth-child(6) {
+                animation-delay: .26s;
+            }
+
+            .feature-card:nth-child(1) {
+                animation-delay: .06s;
+            }
+
+            .feature-card:nth-child(2) {
+                animation-delay: .11s;
+            }
+
+            .feature-card:nth-child(3) {
+                animation-delay: .16s;
+            }
+
+            @@keyframes rise {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="blob blob1"></div>
+            <div class="blob blob2"></div>
+            <div class="blob blob3"></div>
+        </div>
+        <div class="hero-noise"></div>
+
+        <div class="topbar">
+            <div class="mark">Sonara</div>
+            <div class="nav-actions">
+                <a href="/Account/Login" class="btn-ghost-nav">Giriş yap</a>
+                <a href="/Account/Register" class="btn-solid-nav">Kayıt ol</a>
+            </div>
+        </div>
+
+        <div class="hero-content">
+            <div class="hero-eyebrow"><i></i> Sanatçı yönetimli müzik platformu</div>
+            <h1>Sesin frekansı <span class="grad">seninle</span> değişir.</h1>
+            <p class="lead">Sonara, dinleyiciyi algoritmaların değil sanatçının şekillendirdiği bir müzik alanı. Ruh haline göre keşfet, kendi koleksiyonunu kur, kaldığın yerden — hangi cihazda olursan ol — devam et.</p>
+            <div class="hero-ctas">
+                <a href="/Account/Register" class="btn-primary-lg">
+                    Ücretsiz başla
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </a>
+                <a href="/Account/Login" class="btn-outline-lg">Zaten hesabım var</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="artists-section">
+        <div class="artists-head">
+            <p class="eyebrow-sm">Sonara'da sanatçılar</p>
+            <h2>Katalog, sanatçının elinde.</h2>
+            <p>Her sanatçı kendi profilini, albümünü ve dinleyici deneyimini kendisi kurar. Sen sadece dinle, keşfet, koleksiyonunu oluştur.</p>
+        </div>
+
+        <div class="artist-showcase">
+            <div class="artist-orb o1"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg></div>
+            <div class="artist-orb o2"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg></div>
+            <div class="artist-orb o3"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg></div>
+            <div class="artist-orb o4"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg></div>
+            <div class="artist-orb o5"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg></div>
+            <div class="artist-orb o6"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg></div>
+        </div>
+
+        <div class="artists-cta">
+            <a href="/Account/Register" class="btn-outline-lg" style="color:#fff;">Sanatçıları keşfet</a>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg></div>
+                <h3>Kaldığın yerden devam</h3>
+                <p>Bir cihazda yarım bıraktığın şarkı, başka bir cihazda tam kaldığın saniyeden açılır.</p>
+            </div>
+            <div class="feature-card">
+                <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L12 12 L18 15" /><circle cx="12" cy="12" r="10" /></svg></div>
+                <h3>Ruh haline göre keşif</h3>
+                <p>Odaklan, sakinleş ya da enerjini yükselt — koleksiyonlar dinleyicinin anına göre kurulur.</p>
+            </div>
+            <div class="feature-card">
+                <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg></div>
+                <h3>Kendi playlist'in</h3>
+                <p>Sınırsız koleksiyon oluştur, kapağını sen seç, şarkıları istediğin gibi düzenle.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="footer">
+        <div class="mark" style="font-size:15px;">Sonara</div>
+        <div class="foot-note">© 2026 SONARA — TÜM SES HAKLARI SAKLIDIR</div>
+    </div>
+
+</body>
+</html>

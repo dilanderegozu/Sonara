@@ -1,0 +1,363 @@
+﻿@model Sonara.WebUI.Services.MoodDetailDto
+@{
+    Layout = null;
+    var otherMoods = ViewBag.OtherMoods as List<Sonara.WebUI.Services.MoodDto> ?? new List<Sonara.WebUI.Services.MoodDto>();
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonara — @Model.Name</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0710; --surface:#171120; --surface-2:#1E1729;
+    --text:#FFFFFF; --text-dim:rgba(255,255,255,.65); --text-faint:rgba(255,255,255,.4);
+    --accent:#C64BFF; --accent-2:#FF6FA0; --accent-3:#6EE7D8;
+    --line:rgba(255,255,255,0.10);
+    --mood-color:@Model.ColorHex;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh;}
+  a{color:inherit; text-decoration:none;}
+
+  .topbar{
+    position:sticky; top:0; z-index:20; display:flex; align-items:center;
+    justify-content:space-between; padding:20px clamp(20px,4vw,56px);
+    background:rgba(11,7,16,0.85); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .mark{font-weight:800; font-size:18px; letter-spacing:-0.02em;}
+  .nav-links{display:flex; gap:28px; font-size:14px; color:var(--text-dim);}
+  .nav-links a{padding-bottom:4px; border-bottom:1px solid transparent; transition:.2s;}
+  .nav-links a.active{color:#fff; border-color:var(--accent);}
+  .nav-links a:hover{color:#fff;}
+  .avatar{
+    width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:#fff;
+  }
+
+  main{padding:0 clamp(20px,4vw,56px) 140px;}
+
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px; margin-top:24px; font-size:13px; color:var(--text-dim);
+    transition:color .2s;
+  }
+  .back-link:hover{color:var(--accent-3);}
+
+  .mood-header{
+    display:flex; align-items:flex-end; gap:28px; padding:24px 0 40px; flex-wrap:wrap;
+  }
+  .header-tile{
+    width:170px; height:170px; border-radius:20px; flex:none;
+    background:var(--mood-color);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+    box-shadow:0 24px 60px -20px rgba(198,75,255,.4);
+  }
+  .header-tile::after{content:''; position:absolute; right:-24px; bottom:-28px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,.16);}
+  .header-tile svg{position:relative; z-index:2;}
+  .mood-info .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--text-dim); margin:0 0 10px;
+  }
+  .mood-info h1{
+    font-weight:800; letter-spacing:-0.02em; font-size:clamp(30px,4vw,46px);
+    margin:0 0 12px; line-height:1.02;
+  }
+  .mood-info .meta-line{font-size:13px; color:var(--text-dim); margin-bottom:20px;}
+  .play-all-btn{
+    background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border:none;
+    padding:13px 26px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:9px;
+    box-shadow:0 10px 26px -8px rgba(198,75,255,.65);
+    transition:filter .2s, transform .2s;
+  }
+  .play-all-btn:hover{filter:brightness(1.08); transform:translateY(-1px);}
+
+  .content-grid{display:grid; grid-template-columns:1fr 300px; gap:48px; align-items:start;}
+  @@media (max-width:900px){ .content-grid{grid-template-columns:1fr;} }
+
+  .track-table{width:100%; border-collapse:collapse;}
+  .track-table thead th{
+    text-align:left; font-size:12px; font-weight:600; color:var(--text-faint);
+    padding:0 12px 14px; border-bottom:1px solid var(--line);
+  }
+  .track-table thead th.col-num{width:40px;}
+  .track-row td{padding:12px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  .track-row{cursor:pointer; transition:background .15s;}
+  .track-row:hover{background:rgba(255,255,255,.03);}
+  .track-row .t-num{font-size:13px; color:var(--text-faint); font-family:'JetBrains Mono',monospace;}
+  .track-row .t-main{display:flex; align-items:center; gap:14px;}
+  .track-row .t-art{width:46px; height:46px; border-radius:8px; flex:none; background-size:cover; background-position:center; background-color:var(--surface-2);}
+  .track-row .t-title{font-size:14.5px; font-weight:600;}
+  .track-row .t-artist{font-size:12.5px; color:var(--text-dim);}
+
+  .empty-tracks{padding:60px 10px; text-align:center; color:var(--text-dim); font-size:13.5px;}
+
+  .side-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; overflow:hidden;}
+  .side-card .chart-banner{
+    height:130px; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:16px; cursor:pointer;
+    background:linear-gradient(155deg, rgba(198,75,255,.35), rgba(11,7,16,.5));
+  }
+  .side-card .chart-banner h4{font-weight:800; font-size:19px; margin:0 0 4px;}
+  .side-card .chart-banner p{font-size:12px; color:rgba(255,255,255,.75); margin:0;}
+  .side-card .other-moods{padding:18px 18px 12px;}
+  .side-card .other-moods-title{font-size:12px; font-weight:700; color:var(--text-dim); margin:0 0 14px; text-transform:uppercase; letter-spacing:.06em;}
+  .other-mood-row{display:flex; align-items:center; gap:12px; padding:9px 0; cursor:pointer; border-radius:8px; transition:background .15s;}
+  .other-mood-row:hover{background:rgba(255,255,255,.04);}
+  .other-mood-swatch{width:34px; height:34px; border-radius:9px; flex:none;}
+  .other-mood-row .om-name{font-size:13.5px; font-weight:600;}
+  .other-mood-row .om-count{font-size:11.5px; color:var(--text-dim);}
+
+  .mood-header, .track-row, .side-card{opacity:0; transform:translateY(10px); animation:rise .55s cubic-bezier(.2,.7,.2,1) forwards;}
+  @@keyframes rise{to{opacity:1; transform:translateY(0);}}
+
+  .miniplayer{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    background:rgba(15,10,20,0.95); backdrop-filter:blur(16px);
+    border-top:1px solid var(--line);
+    display:flex; align-items:center; gap:20px;
+    padding:12px clamp(20px,4vw,56px);
+  }
+  .mp-track{display:flex; align-items:center; gap:12px; width:240px; flex:none;}
+  .mp-art{width:46px; height:46px; border-radius:8px; flex:none; background-size:cover; background-position:center; background-color:var(--surface-2);}
+  .mp-title{font-size:13.5px; font-weight:600;}
+  .mp-artist{font-size:11.5px; color:var(--text-dim);}
+  .mp-center{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; max-width:520px; margin:0 auto;}
+  .mp-controls{display:flex; align-items:center; gap:18px;}
+  .mp-controls button{background:none; border:none; color:var(--text-dim); cursor:pointer; padding:4px; display:flex;}
+  .mp-controls button:hover{color:#fff;}
+  .mp-play{
+    width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center; color:#fff !important;
+    box-shadow:0 8px 20px -6px rgba(198,75,255,.7);
+  }
+  .mp-progress{display:flex; align-items:center; gap:8px; width:100%;}
+  .mp-progress span{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-faint); min-width:32px; text-align:center;}
+  .mp-bar{flex:1; height:3px; background:var(--line); position:relative; border-radius:3px; cursor:pointer;}
+  .mp-bar i{position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius:3px;}
+  .mp-right{width:240px; flex:none; display:flex; justify-content:flex-end; align-items:center; gap:16px;}
+</style>
+</head>
+<body>
+
+  @Html.AntiForgeryToken()
+
+   <div class="topbar">
+            <div class="mark">Sonara</div>
+            <div class="nav-links">
+                <a href="/Home/Index" class="active">Keşfet</a>
+                <a href="/Library/Index">Kütüphane</a>
+                <a href="/Artists/Index" >Sanatçılar</a>
+                <a href="/Songs/Index">Şarkılar</a>
+            </div>
+            <div class="avatar">D</div>
+        </div>
+
+  <main>
+    <a href="/Home/Index" class="back-link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      Keşfet'e dön
+    </a>
+
+    <div class="mood-header">
+      <div class="header-tile">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="1.8" opacity=".55"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
+      <div class="mood-info">
+        <p class="eyebrow">Ruh hali</p>
+        <h1>@Model.Name</h1>
+        <p class="meta-line">@Model.Songs.Count koleksiyon</p>
+        <button class="play-all-btn" onclick="playAll()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+          Tümünü Çal
+        </button>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div>
+        @if (Model.Songs.Any())
+        {
+            <table class="track-table">
+              <thead>
+                <tr>
+                  <th class="col-num">#</th>
+                  <th>Başlık</th>
+                </tr>
+              </thead>
+              <tbody>
+                @{ var idx = 1; }
+                @foreach (var song in Model.Songs)
+                {
+                    <tr class="track-row" data-song-id="@song.SongId" data-title="@song.Title" data-artist="@song.ArtistName" data-cover="@song.CoverImageUrl" onclick="playSong(@song.SongId, this)">
+                        <td class="t-num">@idx</td>
+                        <td>
+                            <div class="t-main">
+                                <div class="t-art" style="@(string.IsNullOrEmpty(song.CoverImageUrl) ? "" : $"background-image:url('{song.CoverImageUrl}')")"></div>
+                                <div>
+                                    <div class="t-title">@song.Title</div>
+                                    <div class="t-artist">@song.ArtistName</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    idx++;
+                }
+              </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-tracks">Bu ruh haline henüz şarkı eklenmemiş.</div>
+        }
+      </div>
+
+      <div class="side-card">
+        <div class="chart-banner" onclick="location.href='/Songs/Index'">
+          <h4>Tüm Şarkılar</h4>
+          <p>Katalogdaki her şeyi keşfet.</p>
+        </div>
+        @if (otherMoods.Any())
+        {
+            <div class="other-moods">
+                <p class="other-moods-title">Diğer ruh halleri</p>
+                @foreach (var mood in otherMoods)
+                {
+                    <div class="other-mood-row" onclick="location.href='/Home/MoodDetail/@mood.MoodId'">
+                        <div class="other-mood-swatch" style="background:@mood.ColorHex;"></div>
+                        <div>
+                            <div class="om-name">@mood.Name</div>
+                            <div class="om-count">@mood.SongCount koleksiyon</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+      </div>
+    </div>
+  </main>
+
+  <audio id="globalPlayer" preload="none"></audio>
+
+  <div class="miniplayer">
+    <div class="mp-track">
+      <div class="mp-art" id="mpArt"></div>
+      <div>
+        <div class="mp-title" id="mpTitle">Bir şarkı seç</div>
+        <div class="mp-artist" id="mpArtist">—</div>
+      </div>
+    </div>
+    <div class="mp-center">
+      <div class="mp-controls">
+        <button class="mp-play" id="mpPlayBtn" title="Oynat/Duraklat" onclick="togglePlayPause()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" id="mpPlayIcon"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+      </div>
+      <div class="mp-progress">
+        <span id="mpCurrentTime">0:00</span>
+        <div class="mp-bar" id="mpBar" onclick="seekTo(event)"><i id="mpBarFill"></i></div>
+        <span id="mpDuration">0:00</span>
+      </div>
+    </div>
+    <div class="mp-right"></div>
+  </div>
+
+<script>
+  function getAntiForgeryToken(){
+    const el = document.querySelector('input[name="__RequestVerificationToken"]');
+    return el ? el.value : '';
+  }
+
+  const audio = document.getElementById('globalPlayer');
+  const mpTitle = document.getElementById('mpTitle');
+  const mpArtist = document.getElementById('mpArtist');
+  const mpArt = document.getElementById('mpArt');
+  const mpPlayIcon = document.getElementById('mpPlayIcon');
+  const mpBarFill = document.getElementById('mpBarFill');
+  const mpCurrentTime = document.getElementById('mpCurrentTime');
+  const mpDuration = document.getElementById('mpDuration');
+
+  function formatTime(totalSeconds){
+    const s = Math.floor(totalSeconds % 60).toString().padStart(2,'0');
+    const m = Math.floor(totalSeconds / 60);
+    return m + ':' + s;
+  }
+
+  async function playSong(songId, cardEl){
+    try{
+      const response = await fetch('/Home/PlaySong', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': getAntiForgeryToken()
+        },
+        body: JSON.stringify({ songId: songId })
+      });
+
+      if(!response.ok){
+        const err = await response.json().catch(()=>({message:'Bu şarkı şu an oynatılamıyor.'}));
+        alert(err.message);
+        return;
+      }
+
+      const data = await response.json();
+      audio.src = data.audioUrl;
+      audio.play();
+
+      mpPlayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+      mpTitle.textContent = data.title;
+      mpArtist.textContent = cardEl ? cardEl.dataset.artist : '';
+      const coverUrl = cardEl ? cardEl.dataset.cover : null;
+      mpArt.style.backgroundImage = coverUrl ? `url('${coverUrl}')` : '';
+    } catch(e){
+      console.error(e);
+      alert('Şarkı oynatılırken bir hata oluştu.');
+    }
+  }
+
+  function playAll(){
+    const firstRow = document.querySelector('.track-row');
+    if(firstRow){
+      playSong(parseInt(firstRow.dataset.songId), firstRow);
+    }
+  }
+
+  function togglePlayPause(){
+    if(!audio.src) return;
+    if(audio.paused){
+      audio.play();
+      mpPlayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+    } else {
+      audio.pause();
+      mpPlayIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    }
+  }
+
+  function seekTo(evt){
+    if(!audio.duration) return;
+    const bar = document.getElementById('mpBar');
+    const rect = bar.getBoundingClientRect();
+    const ratio = (evt.clientX - rect.left) / rect.width;
+    audio.currentTime = ratio * audio.duration;
+  }
+
+  audio.addEventListener('timeupdate', function(){
+    if(!audio.duration) return;
+    const percent = (audio.currentTime / audio.duration) * 100;
+    mpBarFill.style.width = percent + '%';
+    mpCurrentTime.textContent = formatTime(audio.currentTime);
+    mpDuration.textContent = formatTime(audio.duration);
+  });
+
+  audio.addEventListener('ended', function(){
+    mpPlayIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+  });
+</script>
+</body>
+</html>

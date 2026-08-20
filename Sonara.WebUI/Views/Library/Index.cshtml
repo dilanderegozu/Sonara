@@ -1,0 +1,263 @@
+﻿@model List<Sonara.WebUI.Services.LibraryPlaylistDto>
+@{
+    Layout = null;
+    var palettes = new[] { "p1", "p2", "p3", "p4", "p5", "p6" };
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonara — Kütüphane</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0710; --surface:#171120; --surface-2:#1E1729;
+    --text:#FFFFFF; --text-dim:rgba(255,255,255,.65); --text-faint:rgba(255,255,255,.4);
+    --accent:#C64BFF; --accent-2:#FF6FA0; --accent-3:#6EE7D8;
+    --line:rgba(255,255,255,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh;}
+  a{color:inherit; text-decoration:none;}
+
+  .topbar{
+    position:sticky; top:0; z-index:20; display:flex; align-items:center;
+    justify-content:space-between; padding:20px clamp(20px,4vw,56px);
+    background:rgba(11,7,16,0.85); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .mark{font-weight:800; font-size:18px; letter-spacing:-0.02em;}
+  .nav-links{display:flex; gap:28px; font-size:14px; color:var(--text-dim);}
+  .nav-links a{padding-bottom:4px; border-bottom:1px solid transparent; transition:.2s;}
+  .nav-links a.active{color:#fff; border-color:var(--accent);}
+  .nav-links a:hover{color:#fff;}
+  .avatar{
+    width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:#fff;
+  }
+
+  main{padding:0 clamp(20px,4vw,56px) 100px;}
+
+  .page-head{
+    padding:52px 0 32px; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:20px;
+    position:relative;
+  }
+  .page-head::before{
+    content:''; position:absolute; top:-30px; left:-20px; width:420px; height:220px;
+    background:radial-gradient(ellipse, rgba(198,75,255,.22), transparent 70%); pointer-events:none; z-index:0;
+  }
+  .page-head-left{position:relative; z-index:1;}
+  .page-head-left .eyebrow{
+    font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    color:rgba(255,255,255,.85); display:inline-flex; align-items:center; gap:10px; margin:0 0 14px;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); padding:7px 14px; border-radius:999px;
+  }
+  .page-head-left h1{
+    font-weight:800; letter-spacing:-0.02em; font-size:clamp(26px,3vw,36px);
+    margin:0; line-height:1.05;
+  }
+  .new-playlist-btn{
+    position:relative; z-index:1;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border:none; padding:13px 24px; border-radius:999px;
+    font-weight:700; font-size:13.5px; cursor:pointer;
+    display:flex; align-items:center; gap:8px; transition:filter .2s, transform .2s;
+    box-shadow:0 10px 26px -8px rgba(198,75,255,.65);
+  }
+  .new-playlist-btn:hover{filter:brightness(1.08); transform:translateY(-1px);}
+
+  .playlist-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:22px;
+  }
+  .playlist-tile{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:18px;
+    cursor:pointer; transition:transform .3s cubic-bezier(.2,.7,.2,1), border-color .25s;
+  }
+  .playlist-tile:hover{transform:translateY(-4px); border-color:rgba(198,75,255,.45);}
+  .playlist-art{
+    width:100%; aspect-ratio:1/1; border-radius:12px; position:relative; overflow:hidden;
+    display:flex; align-items:flex-end; padding:12px; margin-bottom:14px;
+    background-size:cover; background-position:center;
+  }
+  .playlist-art .note-icon{position:relative; z-index:2; opacity:.6;}
+  .playlist-art::after{content:''; position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,.5) 100%);}
+  .playlist-tile .p-title{font-size:14px; font-weight:700; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .playlist-tile .p-meta{font-size:12px; color:var(--text-dim);}
+
+  .p1{background:linear-gradient(155deg,#3A2166,#1D1030);}
+  .p2{background:linear-gradient(155deg,#5A2350,#26102A);}
+  .p3{background:linear-gradient(155deg,#1E3A52,#101E2E);}
+  .p4{background:linear-gradient(155deg,#4A2A1E,#241410);}
+  .p5{background:linear-gradient(155deg,#1E4A44,#0F241F);}
+  .p6{background:linear-gradient(155deg,#3A1E4A,#1A0F26);}
+
+  .empty-state{text-align:center; padding:80px 20px; color:var(--text-dim);}
+  .empty-state .icon{
+    width:56px; height:56px; border-radius:16px; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center; margin:0 auto 20px;
+  }
+  .empty-state h3{font-weight:700; font-size:19px; color:var(--text); margin:0 0 8px;}
+  .empty-state p{font-size:13.5px; margin:0;}
+
+  .upgrade-modal-overlay{
+    position:fixed; inset:0; z-index:100; background:rgba(5,3,8,0.8);
+    backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center;
+  }
+  .upgrade-modal-overlay.show{display:flex;}
+  .upgrade-modal{
+    background:var(--surface-2); border:1px solid rgba(198,75,255,.4); border-radius:18px;
+    padding:36px 32px; max-width:380px; width:90%; text-align:center;
+    box-shadow:0 28px 70px -20px rgba(198,75,255,.4);
+    animation:modalRise .3s cubic-bezier(.2,.7,.2,1);
+  }
+  @@keyframes modalRise{from{opacity:0; transform:translateY(12px) scale(.97);} to{opacity:1; transform:translateY(0) scale(1);}}
+  .upgrade-modal .icon{
+    width:52px; height:52px; border-radius:16px; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center; margin:0 auto 20px;
+  }
+  .upgrade-modal .icon svg{width:22px; height:22px; stroke:#fff;}
+  .upgrade-modal .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--text-dim); margin-bottom:10px;
+  }
+  .upgrade-modal h3{font-weight:700; font-size:21px; margin:0 0 12px;}
+  .upgrade-modal input{
+    width:100%; background:var(--surface); border:1px solid var(--line); color:var(--text);
+    padding:11px 14px; border-radius:10px; font-size:14px; font-family:'Inter',sans-serif;
+    margin-bottom:22px; outline:none; transition:border-color .2s;
+  }
+  .upgrade-modal input:focus{border-color:var(--accent);}
+  .upgrade-modal-actions{display:flex; gap:10px;}
+  .upgrade-modal-actions a, .upgrade-modal-actions button{
+    flex:1; padding:12px 0; border-radius:999px; font-weight:700; font-size:13.5px;
+    cursor:pointer; text-decoration:none; display:inline-block; border:none;
+  }
+  .upgrade-modal-actions .btn-primary{background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff;}
+  .upgrade-modal-actions .btn-primary:hover{filter:brightness(1.08);}
+  .upgrade-modal-actions .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
+  .upgrade-modal-actions .btn-ghost:hover{border-color:var(--text-dim); color:var(--text);}
+
+  .page-head, .playlist-tile{opacity:0; transform:translateY(10px); animation:rise .5s cubic-bezier(.2,.7,.2,1) forwards;}
+  @@keyframes rise{to{opacity:1; transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+  @Html.AntiForgeryToken()
+
+  <div class="topbar">
+            <div class="mark">Sonara</div>
+            <div class="nav-links">
+                <a href="/Home/Index">Keşfet</a>
+                <a href="/Library/Index" class="active">Kütüphane</a>
+                <a href="/Artists/Index" >Sanatçılar</a>
+                <a href="/Songs/Index">Şarkılar</a>
+            </div>
+            <div class="avatar">D</div>
+        </div>
+  <main>
+    <div class="page-head">
+      <div class="page-head-left">
+        <p class="eyebrow">Kütüphanen</p>
+        <h1>Playlistlerin.</h1>
+      </div>
+      <button class="new-playlist-btn" onclick="promptNewPlaylist()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+        Yeni playlist
+      </button>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="playlist-grid">
+            @{ var pi = 0; }
+            @foreach (var playlist in Model)
+            {
+                <div class="playlist-tile" onclick="location.href='/Library/Playlist/@playlist.PlaylistId'">
+                    <div class="playlist-art @(string.IsNullOrEmpty(playlist.CoverImageUrl) ? palettes[pi % palettes.Length] : "")"
+                         style="@(string.IsNullOrEmpty(playlist.CoverImageUrl) ? "" : $"background-image:url('{playlist.CoverImageUrl}')")">
+                        <svg class="note-icon" width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    </div>
+                    <div class="p-title">@playlist.Name</div>
+                    <div class="p-meta">@playlist.SongCount parça</div>
+                </div>
+                pi++;
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+            <h3>Henüz playlist yok.</h3>
+            <p>İlk koleksiyonunu oluşturmak için yukarıdaki butona bas.</p>
+        </div>
+    }
+  </main>
+
+  <div class="upgrade-modal-overlay" id="newPlaylistModalOverlay">
+    <div class="upgrade-modal">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+      <p class="eyebrow">Yeni koleksiyon</p>
+      <h3>Playlist'ine bir isim ver.</h3>
+      <input type="text" id="newPlaylistNameInput" placeholder="örn. Akşam Sarmalı" maxlength="60"
+             onkeydown="if(event.key==='Enter') confirmNewPlaylist()" />
+      <div class="upgrade-modal-actions">
+        <button class="btn-ghost" onclick="closeNewPlaylistModal()">Vazgeç</button>
+        <button class="btn-primary" onclick="confirmNewPlaylist()">Oluştur</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function getAntiForgeryToken(){
+    const el = document.querySelector('input[name="__RequestVerificationToken"]');
+    return el ? el.value : '';
+  }
+
+  function promptNewPlaylist(){
+    document.getElementById('newPlaylistNameInput').value = '';
+    document.getElementById('newPlaylistModalOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('newPlaylistNameInput').focus(), 50);
+  }
+
+  function closeNewPlaylistModal(){
+    document.getElementById('newPlaylistModalOverlay').classList.remove('show');
+  }
+
+  async function confirmNewPlaylist(){
+    const input = document.getElementById('newPlaylistNameInput');
+    const name = input.value.trim();
+    if(!name){
+      input.style.borderColor = 'var(--accent-2)';
+      return;
+    }
+
+    closeNewPlaylistModal();
+
+    try{
+      const response = await fetch('/Library/CreatePlaylistAjax', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': getAntiForgeryToken()
+        },
+        body: JSON.stringify({ name: name })
+      });
+
+      if(response.ok){
+        location.reload();
+      }
+    } catch(e){
+      console.error(e);
+    }
+  }
+</script>
+</body>
+</html>

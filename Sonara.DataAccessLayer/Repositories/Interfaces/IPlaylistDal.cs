@@ -6,5 +6,7 @@ namespace Sonara.DataAccessLayer.Repositories.Interfaces
     {
         Task<List<Playlist>> GetByUserIdAsync(string userId);
         Task<Playlist?> GetWithSongsAsync(int playlistId);
+        Task AddSongAsync(int playlistId, int songId);
+        Task RemoveSongAsync(int playlistId, int songId);
     }
 }

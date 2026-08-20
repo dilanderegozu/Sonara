@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Sonara.CoreLayer;
 using Sonara.CoreLayer.Entities;
 using Sonara.DataAccessLayer.Repositories.Interfaces;
 using Sonara.DtoLayer.Dtos.Admin;
+using System.Diagnostics;
+using TagLib;
 
 namespace Sonara.WebApi.Controllers
 {
@@ -16,15 +19,38 @@ namespace Sonara.WebApi.Controllers
         private readonly IBlobStorageService _blobStorageService;
         private readonly IConfiguration _configuration;
         private readonly IArtistDal _artistDal;
+        private readonly IMoodDal _moodDal;
 
-        public AdminController(IDashboardDal dashboardDal, ISongDal songDal, IBlobStorageService blobStorageService, IConfiguration configuration, IArtistDal artistDal)
+        public AdminController(IDashboardDal dashboardDal, ISongDal songDal, IBlobStorageService blobStorageService, IConfiguration configuration, IArtistDal artistDal, IMoodDal moodDal)
         {
             _dashboardDal = dashboardDal;
             _songDal = songDal;
             _blobStorageService = blobStorageService;
             _configuration = configuration;
             _artistDal = artistDal;
+            _moodDal = moodDal;
         }
+
+        [HttpPost("moods")]
+        public async Task<IActionResult> CreateMood([FromBody] CreateMoodDto dto)
+        {
+            var mood = new Mood { Name = dto.Name, ColorHex = dto.ColorHex };
+            await _moodDal.AddAsync(mood);
+            await _moodDal.SaveChangesAsync();
+
+            return Ok(new { mood.MoodId, mood.Name, mood.ColorHex });
+        }
+
+        [HttpPost("songs/{songId}/moods")]
+        public async Task<IActionResult> AssignMoodsToSong(int songId, [FromBody] List<int> moodIds)
+        {
+            var song = await _songDal.GetByIdAsync(songId);
+            if (song is null) return NotFound(new { Message = "Şarkı bulunamadı." });
+
+            await _songDal.AddMoodsAsync(songId, moodIds);
+            return Ok(new { Message = "Mood'lar atandı." });
+        }
+
         [HttpPost("artists")]
         public async Task<IActionResult> CreateArtist([FromForm] CreateArtistDto dto)
         {
@@ -81,16 +107,34 @@ namespace Sonara.WebApi.Controllers
             string audioUrl;
             using (var stream = dto.AudioFile.OpenReadStream())
             {
-                audioUrl = await _blobStorageService.UploadFileAsync(stream, dto.AudioFile.FileName, songsContainer);
+                audioUrl = await _blobStorageService.UploadFileAsync(stream, dto.AudioFile.FileName, songsContainer, dto.AudioFile.ContentType);
             }
 
             string? coverUrl = null;
             if (dto.CoverFile is not null)
             {
                 using var stream = dto.CoverFile.OpenReadStream();
-                coverUrl = await _blobStorageService.UploadFileAsync(stream, dto.CoverFile.FileName, coversContainer);
+                coverUrl = await _blobStorageService.UploadFileAsync(stream, dto.CoverFile.FileName, coversContainer, dto.CoverFile.ContentType);
             }
+            TimeSpan duration = TimeSpan.Zero;
+            try
+            {
+                var tempPath = Path.GetTempFileName();
+                using (var tempStream = new FileStream(tempPath, FileMode.Create))
+                {
+                    await dto.AudioFile.CopyToAsync(tempStream);
+                }
 
+                var tagFile = TagLib.File.Create(tempPath);
+                duration = tagFile.Properties.Duration;
+                tagFile.Dispose();
+
+                System.IO.File.Delete(tempPath);
+            }
+            catch
+            {
+                duration = TimeSpan.Zero;
+            }
             var song = new Song
             {
                 Title = dto.Title,
@@ -98,7 +142,7 @@ namespace Sonara.WebApi.Controllers
                 AlbumId = dto.AlbumId,
                 AudioUrl = audioUrl,
                 CoverImageUrl = coverUrl ?? "",
-                Duration = TimeSpan.Zero,
+                Duration = duration,
                 PlayCount = 0,
                 ReleaseDate = DateTime.UtcNow
             };
@@ -152,6 +196,43 @@ namespace Sonara.WebApi.Controllers
             });
 
             return Ok(result);
+        }
+
+        [HttpPost("songs/backfill-durations")]
+        public async Task<IActionResult> BackfillDurations()
+        {
+            var songs = await _songDal.GetAllAsync();
+            var updated = 0;
+
+            using var httpClient = new HttpClient();
+
+            foreach (var song in songs.Where(s => s.Duration == TimeSpan.Zero))
+            {
+                try
+                {
+                    var bytes = await httpClient.GetByteArrayAsync(song.AudioUrl);
+
+                    var tempPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.mp3");
+                    await System.IO.File.WriteAllBytesAsync(tempPath, bytes);
+
+                    var tagFile = TagLib.File.Create(tempPath);
+                    song.Duration = tagFile.Properties.Duration;
+                    tagFile.Dispose();
+
+                    System.IO.File.Delete(tempPath);
+
+                    _songDal.Update(song);
+                    updated++;
+                }
+                catch
+                {
+                    // bu şarkı atlanır, diğerlerine devam edilir
+                }
+            }
+
+            await _songDal.SaveChangesAsync();
+
+            return Ok(new { Message = $"{updated} şarkının süresi güncellendi." });
         }
     }
 }

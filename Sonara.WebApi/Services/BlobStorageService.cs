@@ -1,7 +1,7 @@
 ﻿using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Sonara.CoreLayer;
-
+using Azure.Storage.Blobs.Models;
 namespace Sonara.WebApi.Services
 {
     public class BlobStorageService : IBlobStorageService
@@ -14,17 +14,20 @@ namespace Sonara.WebApi.Services
                 ?? throw new InvalidOperationException("Azure Storage connection string not found.");
         }
 
-        public async Task<string> UploadFileAsync(Stream fileStream, string fileName, string containerName)
+        public async Task<string> UploadFileAsync(Stream fileStream, string fileName, string containerName, string? contentType = null)
         {
             var blobServiceClient = new BlobServiceClient(_connectionString);
             var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
-            await containerClient.CreateIfNotExistsAsync();
-
             var uniqueFileName = $"{Guid.NewGuid()}-{fileName}";
             var blobClient = containerClient.GetBlobClient(uniqueFileName);
 
-            await blobClient.UploadAsync(fileStream, overwrite: true);
+            var headers = new BlobHttpHeaders
+            {
+                ContentType = contentType ?? "application/octet-stream"
+            };
+
+            await blobClient.UploadAsync(fileStream, new BlobUploadOptions { HttpHeaders = headers });
 
             return blobClient.Uri.ToString();
         }

@@ -12,7 +12,7 @@ namespace Sonara.CoreLayer.Entities
         public DateTime CreatedDate { get; set; }
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
-
+        public string? CoverImageUrl { get; set; }
         public ICollection<PlaylistSong> Songs { get; set; }
     }
 

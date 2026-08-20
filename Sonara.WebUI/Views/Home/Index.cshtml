@@ -8,14 +8,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sonara — Dashboard</title>
+<title>Sonara — Keşfet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..600;1,9..144,400..500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#15171D; --surface:#1B1E26; --surface-2:#232631;
-    --text:#F2F0EA; --text-dim:#9A9CA4; --text-faint:#5C5F68;
-    --accent:#6EE7D8; --accent-amber:#E3A15C;
+    --bg:#0B0710; --surface:#171120; --surface-2:#1E1729;
+    --text:#FFFFFF; --text-dim:rgba(255,255,255,.65); --text-faint:rgba(255,255,255,.4);
+    --accent:#C64BFF; --accent-2:#FF6FA0; --accent-3:#6EE7D8;
     --line:rgba(255,255,255,0.10);
   }
   *{box-sizing:border-box;}
@@ -30,41 +30,72 @@
   .topbar{
     position:sticky; top:0; z-index:20; display:flex; align-items:center;
     justify-content:space-between; padding:20px clamp(20px,4vw,56px);
-    background:rgba(21,23,29,0.86); backdrop-filter:blur(10px);
+    background:rgba(11,7,16,0.85); backdrop-filter:blur(12px);
     border-bottom:1px solid var(--line);
   }
-  .mark{font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-dim);}
-  .mark span{color:var(--accent);}
-  .nav-links{display:flex; gap:32px; font-size:13.5px; color:var(--text-dim);}
+  .mark{font-weight:800; font-size:18px; letter-spacing:-0.02em;}
+  .mark span{background:linear-gradient(120deg, var(--accent-2), var(--accent)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .nav-links{display:flex; gap:28px; font-size:14px; color:var(--text-dim);}
   .nav-links a{text-decoration:none; padding-bottom:4px; border-bottom:1px solid transparent; transition:.2s;}
-  .nav-links a.active{color:var(--text); border-color:var(--accent);}
-  .nav-links a:hover{color:var(--text);}
+  .nav-links a.active{color:#fff; border-color:var(--accent);}
+  .nav-links a:hover{color:#fff;}
   .nav-right{display:flex; align-items:center; gap:18px;}
   .search-entry{
     display:flex; align-items:center; gap:8px; color:var(--text-faint);
-    font-size:13px; border:1px solid var(--line); padding:8px 14px; border-radius:2px;
+    font-size:13px; border:1px solid var(--line); padding:8px 14px; border-radius:10px;
     cursor:pointer; transition:border-color .2s, color .2s;
   }
   .search-entry:hover{border-color:var(--accent); color:var(--text-dim);}
   .avatar{
-    width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),#3E8F86);
-    display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-style:italic;
-    font-size:14px; color:#06110F; cursor:pointer;
+    width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:flex; align-items:center; justify-content:center; font-weight:700;
+    font-size:14px; color:#fff; cursor:pointer;
   }
 
   main{padding:0 clamp(20px,4vw,56px) 140px;}
+  .add-btn{
+  position:absolute; top:8px; right:8px; z-index:3;
+  width:26px; height:26px; border-radius:50%; background:rgba(11,7,16,0.7);
+  border:1px solid rgba(255,255,255,0.18); color:var(--text);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  opacity:0; transition:opacity .2s;
+}
+.music-card:hover .add-btn{opacity:1;}
+.add-btn:hover{background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border-color:transparent;}
 
+.playlist-menu{
+  position:fixed; z-index:200; background:var(--surface-2); border:1px solid var(--line);
+  border-radius:12px; min-width:180px; max-height:240px; overflow-y:auto;
+  box-shadow:0 20px 48px -14px rgba(0,0,0,.65); display:none;
+}
+.playlist-menu.show{display:block;}
+.playlist-menu .menu-title{
+  padding:10px 14px 6px; font-family:'JetBrains Mono',monospace; font-size:10px;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint);
+}
+.playlist-menu .menu-item{
+  padding:9px 14px; font-size:13px; color:var(--text); cursor:pointer; transition:background .15s;
+}
+.playlist-menu .menu-item:hover{background:var(--surface);}
+.playlist-menu .menu-empty{padding:12px 14px; font-size:12.5px; color:var(--text-dim);}
   .greet{padding:56px 0 40px; position:relative; overflow:hidden;}
+  .greet::before{
+    content:''; position:absolute; top:-60px; left:-40px; width:420px; height:280px;
+    background:radial-gradient(ellipse, rgba(198,75,255,.28), transparent 70%); pointer-events:none; z-index:0;
+  }
   .greet-eyebrow{
-    font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--text-dim); display:flex; align-items:center; gap:10px; margin:0 0 16px;
+    position:relative; z-index:1;
+    font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    color:rgba(255,255,255,.85); display:inline-flex; align-items:center; gap:10px; margin:0 0 18px;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); padding:7px 14px; border-radius:999px;
   }
-  .greet-eyebrow::before{content:''; width:20px; height:1px; background:var(--accent);}
+  .greet-eyebrow::before{content:''; width:6px; height:6px; border-radius:50%; background:var(--accent-3);}
   .greet h1{
-    font-family:'Fraunces',serif; font-style:italic; font-weight:380; font-size:clamp(30px,3.6vw,44px);
-    margin:0; line-height:1.08; max-width:640px;
+    position:relative; z-index:1;
+    font-weight:800; letter-spacing:-0.02em; font-size:clamp(30px,3.8vw,48px);
+    margin:0; line-height:1.06; max-width:680px;
   }
-  .greet-canvas{position:absolute; right:0; top:0; bottom:0; width:38%; opacity:.4; pointer-events:none;}
+  .greet-canvas{position:absolute; right:0; top:0; bottom:0; width:38%; opacity:.35; pointer-events:none;}
   @@media (max-width:900px){ .greet-canvas{display:none;} }
 
   .section{margin-bottom:52px;}
@@ -73,12 +104,11 @@
   }
   .section-head .titles{display:flex; align-items:baseline; gap:14px;}
   .section-head h2{
-    font-family:'Fraunces',serif; font-weight:500; font-style:normal; font-size:21px; margin:0;
-    letter-spacing:-0.01em;
+    font-weight:700; font-size:20px; margin:0; letter-spacing:-0.01em;
   }
   .section-head .count{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-faint);}
   .section-head .see-all{font-size:12.5px; color:var(--text-dim); text-decoration:none; border-bottom:1px solid transparent; transition:.2s;}
-  .section-head .see-all:hover{color:var(--accent); border-color:var(--accent);}
+  .section-head .see-all:hover{color:var(--accent-3); border-color:var(--accent-3);}
 
   .scroller{
     display:flex; gap:18px; overflow-x:auto; padding-bottom:6px; scroll-snap-type:x proximity;
@@ -90,7 +120,7 @@
     flex:0 0 168px; scroll-snap-align:start; cursor:pointer; position:relative;
   }
   .art{
-    width:168px; height:168px; border-radius:2px; position:relative; overflow:hidden;
+    width:168px; height:168px; border-radius:14px; position:relative; overflow:hidden;
     display:flex; align-items:flex-end; padding:12px;
     transition:transform .3s cubic-bezier(.2,.7,.2,1);
     background-size:cover; background-position:center;
@@ -98,21 +128,23 @@
   .music-card:hover .art{transform:translateY(-4px);}
   .art::after{
     content:''; position:absolute; inset:0;
-    background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,.55) 100%);
+    background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,.6) 100%);
   }
   .art .play{
-    position:relative; z-index:2; width:34px; height:34px; border-radius:50%;
-    background:var(--accent); display:flex; align-items:center; justify-content:center;
+    position:relative; z-index:2; width:36px; height:36px; border-radius:50%;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center;
     opacity:0; transform:translateY(6px); transition:opacity .25s, transform .25s;
+    box-shadow:0 10px 24px -6px rgba(198,75,255,.7);
   }
   .music-card:hover .art .play{opacity:1; transform:translateY(0);}
-  .art .play svg{width:12px; height:12px; fill:#06110F; margin-left:1px;}
+  .art .play svg{width:13px; height:13px; fill:#fff; margin-left:1px;}
 
-  .music-card .title{font-size:13.5px; font-weight:500; margin-top:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .music-card .title{font-size:13.5px; font-weight:600; margin-top:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .music-card .meta{font-size:12px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 
-  .progress-wrap{margin-top:8px; height:2px; background:var(--line); border-radius:2px; overflow:hidden;}
-  .progress-fill{height:100%; background:var(--accent);}
+  .progress-wrap{margin-top:8px; height:3px; background:var(--line); border-radius:3px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2));}
 
   .artist-card{flex:0 0 128px; scroll-snap-align:start; cursor:pointer; text-align:center;}
   .artist-ring{
@@ -122,36 +154,42 @@
     background-size:cover; background-position:center;
   }
   .artist-card:hover .artist-ring{transform:translateY(-4px);}
-  .artist-card .title{font-size:13px; font-weight:500; margin-top:12px;}
+  .artist-card .title{font-size:13px; font-weight:600; margin-top:12px;}
   .artist-card .meta{font-size:11.5px; color:var(--text-dim);}
 
   .playlist-card{
     flex:0 0 280px; scroll-snap-align:start; cursor:pointer;
-    background:var(--surface); border:1px solid var(--line); padding:16px; border-radius:2px;
+    background:var(--surface); border:1px solid var(--line); padding:16px; border-radius:14px;
     display:flex; gap:14px; align-items:center; transition:border-color .25s, transform .3s;
   }
-  .playlist-card:hover{border-color:var(--accent); transform:translateY(-3px);}
-  .playlist-card .mini-art{width:56px; height:56px; border-radius:2px; flex:none;}
-  .playlist-card .title{font-size:13.5px; font-weight:500;}
+  .playlist-card:hover{border-color:rgba(198,75,255,.5); transform:translateY(-3px);}
+  .playlist-card .mini-art{width:56px; height:56px; border-radius:10px; flex:none;}
+  .playlist-card .title{font-size:13.5px; font-weight:600;}
   .playlist-card .meta{font-size:11.5px; color:var(--text-dim); margin-top:3px;}
 
-  .p1{background:linear-gradient(155deg,#2B3F3C,#17211F);}
-  .p2{background:linear-gradient(155deg,#3A2F22,#1D1815);}
-  .p3{background:linear-gradient(155deg,#28304A,#161A26);}
-  .p4{background:linear-gradient(155deg,#382F1F,#1C1811);}
-  .p5{background:linear-gradient(155deg,#22353C,#131F23);}
-  .p6{background:linear-gradient(155deg,#332538,#191219);}
+  .p1{background:linear-gradient(155deg,#3A2166,#1D1030);}
+  .p2{background:linear-gradient(155deg,#5A2350,#26102A);}
+  .p3{background:linear-gradient(155deg,#1E3A52,#101E2E);}
+  .p4{background:linear-gradient(155deg,#4A2A1E,#241410);}
+  .p5{background:linear-gradient(155deg,#1E4A44,#0F241F);}
+  .p6{background:linear-gradient(155deg,#3A1E4A,#1A0F26);}
 
   .mood-tile{
-    flex:0 0 190px; height:104px; border-radius:3px; padding:16px;
+    flex:0 0 190px; height:104px; border-radius:14px; padding:16px;
     display:flex; flex-direction:column; justify-content:flex-end; cursor:pointer;
     position:relative; overflow:hidden; scroll-snap-align:start;
     transition:transform .3s cubic-bezier(.2,.7,.2,1);
   }
+  .mp-add-btn{
+  background:none; border:1px solid var(--line); color:var(--text-dim);
+  width:30px; height:30px; border-radius:50%; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:.2s;
+}
+.mp-add-btn:hover{border-color:var(--accent); color:var(--accent);}
   .mood-tile:hover{transform:translateY(-4px);}
-  .mood-tile .mood-title{font-family:'Fraunces',serif; font-weight:500; font-size:17px; position:relative; z-index:2; color:#0D0D0D;}
+  .mood-tile .mood-title{font-weight:700; font-size:16px; position:relative; z-index:2; color:#0D0D0D;}
   .mood-tile .mood-count{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:rgba(13,13,13,.62); position:relative; z-index:2; margin-top:2px;}
-  .mood-tile::after{content:''; position:absolute; right:-18px; bottom:-22px; width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,.14);}
+  .mood-tile::after{content:''; position:absolute; right:-18px; bottom:-22px; width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,.16);}
   .m-teal{background:#7FD9C4;}
   .m-coral{background:#F0A08A;}
   .m-amber{background:#F0C572;}
@@ -161,49 +199,52 @@
 
   .plan-banner{
     display:flex; align-items:center; justify-content:space-between; gap:24px;
-    background:var(--surface); border:1px solid var(--line); border-radius:3px;
-    padding:20px 26px; margin-bottom:44px;
+    background:linear-gradient(155deg, rgba(198,75,255,.14), rgba(255,111,160,.06));
+    border:1px solid rgba(198,75,255,.3); border-radius:16px;
+    padding:22px 26px; margin-bottom:44px;
   }
   .plan-left{display:flex; align-items:center; gap:20px;}
   .plan-info .eyebrow-sm{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim);}
-  .plan-info .plan-name{font-family:'Fraunces',serif; font-style:italic; font-weight:500; font-size:19px; margin-top:2px;}
+  .plan-info .plan-name{font-weight:700; font-size:19px; margin-top:2px;}
   .plan-info .plan-sub{font-size:12.5px; color:var(--text-dim); margin-top:3px;}
   .plan-cta{
-    background:var(--accent); color:#0D231F; border:none; padding:11px 22px; border-radius:2px;
-    font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px; cursor:pointer; white-space:nowrap;
-    transition:filter .2s;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border:none; padding:12px 24px; border-radius:999px;
+    font-weight:700; font-size:13.5px; cursor:pointer; white-space:nowrap;
+    box-shadow:0 10px 26px -8px rgba(198,75,255,.65);
+    transition:filter .2s, transform .2s;
   }
-  .plan-cta:hover{filter:brightness(1.08);}
+  .plan-cta:hover{filter:brightness(1.08); transform:translateY(-1px);}
   @@media (max-width:640px){ .plan-banner{flex-direction:column; align-items:flex-start;} }
 
   .miniplayer{
     position:fixed; left:0; right:0; bottom:0; z-index:30;
-    background:rgba(24,26,33,0.94); backdrop-filter:blur(14px);
+    background:rgba(15,10,20,0.95); backdrop-filter:blur(16px);
     border-top:1px solid var(--line);
     display:flex; align-items:center; gap:20px;
     padding:12px clamp(20px,4vw,56px);
   }
   .mp-track{display:flex; align-items:center; gap:12px; width:240px; flex:none;}
-  .mp-art{width:44px; height:44px; border-radius:2px; flex:none; background-size:cover; background-position:center;}
-  .mp-title{font-size:13px; font-weight:500;}
+  .mp-art{width:46px; height:46px; border-radius:10px; flex:none; background-size:cover; background-position:center;}
+  .mp-title{font-size:13.5px; font-weight:600;}
   .mp-artist{font-size:11.5px; color:var(--text-dim);}
 
   .mp-center{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; max-width:520px; margin:0 auto;}
   .mp-controls{display:flex; align-items:center; gap:18px;}
   .mp-controls button{background:none; border:none; color:var(--text-dim); cursor:pointer; padding:4px; display:flex;}
-  .mp-controls button:hover{color:var(--text);}
+  .mp-controls button:hover{color:#fff;}
   .mp-play{
-    width:32px; height:32px; border-radius:50%; background:var(--accent);
-    display:flex; align-items:center; justify-content:center; color:#06110F !important;
+    width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center; color:#fff !important;
+    box-shadow:0 8px 20px -6px rgba(198,75,255,.7);
   }
   .mp-progress{display:flex; align-items:center; gap:8px; width:100%;}
   .mp-progress span{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-faint); min-width:32px; text-align:center;}
-  .mp-bar{flex:1; height:2px; background:var(--line); position:relative; border-radius:2px; cursor:pointer;}
-  .mp-bar i{position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--accent); border-radius:2px;}
+  .mp-bar{flex:1; height:3px; background:var(--line); position:relative; border-radius:3px; cursor:pointer;}
+  .mp-bar i{position:absolute; left:0; top:0; bottom:0; width:0%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius:3px;}
 
   .mp-right{width:240px; flex:none; display:flex; justify-content:flex-end; align-items:center; gap:16px;}
   .mp-wave{display:flex; align-items:flex-end; gap:2px; height:16px;}
-  .mp-wave i{width:2px; background:var(--accent); border-radius:1px; animation:mpwave 1s ease-in-out infinite; animation-play-state:paused;}
+  .mp-wave i{width:2px; background:var(--accent-3); border-radius:1px; animation:mpwave 1s ease-in-out infinite; animation-play-state:paused;}
   .mp-wave.playing i{animation-play-state:running;}
   .mp-wave i:nth-child(1){height:5px; animation-delay:0ms;}
   .mp-wave i:nth-child(2){height:12px; animation-delay:120ms;}
@@ -228,41 +269,87 @@
     .mp-center{display:none;}
     .mp-right{width:auto;}
   }
+  .upgrade-modal-overlay{
+  position:fixed; inset:0; z-index:100; background:rgba(5,3,8,0.8);
+  backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center;
+}
+.upgrade-modal-overlay.show{display:flex;}
+.upgrade-modal{
+  background:var(--surface-2); border:1px solid rgba(198,75,255,.4); border-radius:18px;
+  padding:36px 32px; max-width:380px; width:90%; text-align:center;
+  box-shadow:0 28px 70px -20px rgba(198,75,255,.4);
+  animation:modalRise .3s cubic-bezier(.2,.7,.2,1);
+}
+@@keyframes modalRise{from{opacity:0; transform:translateY(12px) scale(.97);} to{opacity:1; transform:translateY(0) scale(1);}}
+.upgrade-modal .icon{
+  width:52px; height:52px; border-radius:16px; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  display:flex; align-items:center; justify-content:center; margin:0 auto 20px;
+}
+.upgrade-modal .icon svg{width:22px; height:22px; stroke:#fff;}
+.upgrade-modal .eyebrow{
+  font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--text-dim); margin-bottom:10px;
+}
+.upgrade-modal h3{
+  font-weight:700; font-size:21px; margin:0 0 12px;
+}
+.upgrade-modal p{color:var(--text-dim); font-size:13.5px; line-height:1.5; margin:0 0 26px;}
+.upgrade-modal-actions{display:flex; gap:10px;}
+.upgrade-modal-actions a, .upgrade-modal-actions button{
+  flex:1; padding:12px 0; border-radius:999px; font-weight:700; font-size:13.5px;
+  cursor:pointer; text-decoration:none; display:inline-block; border:none;
+}
+.upgrade-modal-actions a{background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff;}
+.upgrade-modal-actions a:hover{filter:brightness(1.08);}
+.upgrade-modal-actions button{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
+.upgrade-modal-actions button:hover{border-color:var(--text-dim); color:var(--text);}
+.menu-item-new{
+  color:var(--accent-3) !important;
+  font-weight:600;
+  display:flex; align-items:center; gap:8px;
+}
+.menu-plus{
+  font-size:15px; font-weight:700;
+}
+.menu-divider{
+  height:1px; background:var(--line); margin:4px 0;
+}
+.playlist-name-modal .icon svg{stroke:#fff;}
+.playlist-name-modal input{
+  width:100%; background:var(--surface); border:1px solid var(--line); color:var(--text);
+  padding:11px 14px; border-radius:10px; font-size:14px; font-family:'Inter',sans-serif;
+  margin-bottom:22px; outline:none; transition:border-color .2s;
+}
+.playlist-name-modal input:focus{border-color:var(--accent);}
 </style>
 </head>
+
 <body>
 
   @Html.AntiForgeryToken()
 
-  <div class="topbar">
-    <div style="display:flex; align-items:center; gap:48px;">
-      <div class="mark">SON<span>A</span>RA</div>
-      <div class="nav-links">
-        <a href="/Home/Index" class="active">Keşfet</a>
-        <a href="#">Kütüphane</a>
-        <a href="#">Sanatçılar</a>
-        <a href="#">Türler</a>
-      </div>
-    </div>
-    <div class="nav-right">
-      <div class="search-entry">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        Ara
-      </div>
-      <div class="avatar">@Model.FirstName[0]</div>
-    </div>
-  </div>
+ <div class="topbar">
+            <div class="mark">Sonara</div>
+            <div class="nav-links">
+                <a href="/Home/Index" class="active">Keşfet</a>
+                <a href="/Library/Index">Kütüphane</a>
+                <a href="/Artists/Index" >Sanatçılar</a>
+                <a href="/Songs/Index">Şarkılar</a>
+            </div>
+            <div class="avatar">D</div>
+        </div>
 
   <main>
     <div class="greet">
       <canvas class="greet-canvas" id="greetWave"></canvas>
+      <p class="greet-eyebrow">Sana özel keşif</p>
       <h1>@Model.Greeting, @Model.FirstName. Kaldığın yerden devam edelim mi?</h1>
     </div>
 
     <div class="plan-banner">
       <div class="plan-left">
-        <div style="width:100px; height:4px; background:var(--line); border-radius:2px; overflow:hidden;">
-          <div style="height:100%; width:@(Model.PlanLevel * 100 / Model.MaxPlanLevel)%; background:var(--accent);"></div>
+        <div style="width:100px; height:5px; background:var(--line); border-radius:3px; overflow:hidden;">
+          <div style="height:100%; width:@(Model.PlanLevel * 100 / Model.MaxPlanLevel)%; background:linear-gradient(90deg, var(--accent), var(--accent-2));"></div>
         </div>
         <div class="plan-info">
           <div class="eyebrow-sm">Mevcut paket</div>
@@ -284,15 +371,17 @@
 
     <section class="section">
       <div class="section-head">
-        <div class="titles"><h2>Dinlemeye devam et</h2><span class="count">@Model.ContinueListening.Count.ToString("00")</span></div>
-        <a href="#" class="see-all">Tümünü gör</a>
+        <div class="titles"><h2>
+            Dinlemeye devam et</h2><span class="count">@Model.ContinueListening.Count.ToString("00")</span></div>
+      
       </div>
       <div class="scroller">
         @{ var ci = 0; }
         @foreach (var item in Model.ContinueListening)
         {
-           <div class="music-card" data-song-id="@item.SongId" data-title="@item.Title" data-artist="@item.ArtistName" onclick="playSong(@item.SongId, this)">
-    <div class="art @(string.IsNullOrEmpty(item.CoverImageUrl) ? palettes[ci % palettes.Length] : "")"
+<div class="music-card" data-song-id="@item.SongId" data-title="@item.Title" data-artist="@item.ArtistName" data-cover="@item.CoverImageUrl" data-position="@item.PositionSeconds" onclick="playSong(@item.SongId, this)">    <button class="add-btn" title="Playlist'e ekle" onclick="event.stopPropagation(); openPlaylistMenu(event, @item.SongId)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+    </button>   <div class="art @(string.IsNullOrEmpty(item.CoverImageUrl) ? palettes[ci % palettes.Length] : "")"
          style="@(string.IsNullOrEmpty(item.CoverImageUrl) ? "" : $"background-image:url('{item.CoverImageUrl}')")">
         <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
     </div>
@@ -312,29 +401,45 @@
     <section class="section">
       <div class="section-head">
         <div class="titles"><h2>Ruh haline göre</h2></div>
-        <a href="#" class="see-all">Tümünü gör</a>
+      
       </div>
-      <div class="scroller">
-        <div class="mood-tile m-teal"><div class="mood-title">Odaklan</div><div class="mood-count">18 koleksiyon</div></div>
-        <div class="mood-tile m-coral"><div class="mood-title">Enerji</div><div class="mood-count">24 koleksiyon</div></div>
-        <div class="mood-tile m-amber"><div class="mood-title">Gün Batımı</div><div class="mood-count">12 koleksiyon</div></div>
-        <div class="mood-tile m-lav"><div class="mood-title">Sakinleş</div><div class="mood-count">21 koleksiyon</div></div>
-        <div class="mood-tile m-olive"><div class="mood-title">Yol Modu</div><div class="mood-count">16 koleksiyon</div></div>
-        <div class="mood-tile m-sky"><div class="mood-title">Yağmurlu</div><div class="mood-count">9 koleksiyon</div></div>
-      </div>
+     <div class="scroller">
+    @foreach (var mood in Model.Moods)
+    {
+        <div class="mood-tile" style="background:@mood.ColorHex;" onclick="location.href='/Home/MoodDetail/@mood.MoodId'">
+            <div class="mood-title">@mood.Name</div>
+            <div class="mood-count">@mood.SongCount koleksiyon</div>
+        </div>
+    }
+    @if (!Model.Moods.Any())
+    {
+        <p style="color:var(--text-dim); font-size:13px;">Henüz mood eklenmemiş.</p>
+    }
+</div>
     </section>
 
     <section class="section">
       <div class="section-head">
-        <div class="titles"><h2>Son oluşturulan playlistler</h2></div>
-        <a href="#" class="see-all">Tümünü gör</a>
-      </div>
+  <div class="titles"><h2>Son oluşturulan playlistler</h2></div>
+  <div style="display:flex; align-items:center; gap:16px;">
+    <button onclick="document.getElementById('newPlaylistForm').style.display='flex'" style="background:none; border:none; color:var(--accent-3); cursor:pointer; font-size:13px; font-weight:600;">+ Yeni</button>
+    <a href="/Playlist/Index" class="see-all">Tümünü gör</a>
+  </div>
+</div>
+
+<form id="newPlaylistForm" method="post" asp-action="CreatePlaylist" asp-controller="Playlist" style="display:none; gap:10px; margin-bottom:16px;">
+  @Html.AntiForgeryToken()
+  <input type="text" name="name" placeholder="Playlist adı..." required
+         style="background:var(--surface); border:1px solid var(--line); color:var(--text); padding:8px 12px; border-radius:10px; font-size:13px;" />
+  <button type="submit" style="background:linear-gradient(135deg, var(--accent), var(--accent-2)); border:none; color:#fff; padding:8px 16px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Oluştur</button>
+</form>
       <div class="scroller">
         @{ var pi = 0; }
         @foreach (var playlist in Model.Playlists)
         {
             <div class="playlist-card">
-                <div class="mini-art @palettes[pi % palettes.Length]"></div>
+            <div class="mini-art @(string.IsNullOrEmpty(playlist.CoverImageUrl) ? palettes[pi % palettes.Length] : "")"
+     style="@(string.IsNullOrEmpty(playlist.CoverImageUrl) ? "" : $"background-image:url('{playlist.CoverImageUrl}'); background-size:cover; background-position:center;")"></div>
                 <div><div class="title">@playlist.Name</div><div class="meta">Sen · @playlist.SongCount parça</div></div>
             </div>
             pi++;
@@ -347,38 +452,33 @@
     </section>
 
     <section class="section">
-      <div class="section-head">
-        <div class="titles"><h2>Sana özel mix</h2><span class="count">Haftalık</span></div>
-        <a href="#" class="see-all">Tümünü gör</a>
-      </div>
-      <div class="scroller">
-        <div class="music-card">
-          <div class="art p4"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Alacakaranlık Karışımı</div>
-          <div class="meta">42 parça</div>
+  <div class="section-head">
+    <div class="titles"><h2>Sana özel mix</h2><span class="count">@Model.Recommendations.Count</span></div>
+    
+  </div>
+  <div class="scroller">
+    @{ var ri = 0; }
+    @foreach (var song in Model.Recommendations)
+    {
+        <div class="music-card" data-song-id="@song.SongId" data-title="@song.Title" data-artist="@song.ArtistName" data-cover="@song.CoverImageUrl" onclick="playSong(@song.SongId, this)">
+               <button class="add-btn" title="Playlist'e ekle" onclick="event.stopPropagation(); openPlaylistMenu(event, @song.SongId)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+            <div class="art @(string.IsNullOrEmpty(song.CoverImageUrl) ? palettes[ri % palettes.Length] : "")"
+                 style="@(string.IsNullOrEmpty(song.CoverImageUrl) ? "" : $"background-image:url('{song.CoverImageUrl}')")">
+                <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+            <div class="title">@song.Title</div>
+            <div class="meta">@song.ArtistName</div>
         </div>
-        <div class="music-card">
-          <div class="art p6"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Sakin Frekans</div>
-          <div class="meta">31 parça</div>
-        </div>
-        <div class="music-card">
-          <div class="art p1"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Şehir Ritmi</div>
-          <div class="meta">28 parça</div>
-        </div>
-        <div class="music-card">
-          <div class="art p3"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Odak Modu</div>
-          <div class="meta">55 parça</div>
-        </div>
-        <div class="music-card">
-          <div class="art p2"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Yağmur Günleri</div>
-          <div class="meta">19 parça</div>
-        </div>
-      </div>
-    </section>
+        ri++;
+    }
+    @if (!Model.Recommendations.Any())
+    {
+        <p style="color:var(--text-dim); font-size:13px;">Henüz öneri oluşturulamadı.</p>
+    }
+  </div>
+</section>
 <section class="section">
   <div class="section-head">
     <div class="titles"><h2>Popüler sanatçılar</h2></div>
@@ -388,7 +488,7 @@
     @{ var pai = 0; }
     @foreach (var artist in Model.PopularArtists)
     {
-        <div class="artist-card">
+        <div class="artist-card" onclick="location.href='/Songs/Artist/@artist.ArtistId'">
                         <div class="artist-ring @(string.IsNullOrEmpty(artist.ImageUrl) ? palettes[pai % palettes.Length] : "")"
                              style="@(string.IsNullOrEmpty(artist.ImageUrl) ? "" : $"background-image:url('{artist.ImageUrl}')")"></div>
             <div class="title">@artist.Name</div>
@@ -405,13 +505,16 @@
 <section class="section">
   <div class="section-head">
     <div class="titles"><h2>Son eklenenler</h2></div>
-    <a href="#" class="see-all">Tümünü gör</a>
+    <a href="/Songs/Index" class="see-all">Tümünü gör</a>
   </div>
   <div class="scroller">
     @{ var rai = 0; }
     @foreach (var song in Model.RecentlyAdded)
     {
-        <div class="music-card" data-song-id="@song.SongId" data-title="@song.Title" data-artist="@song.ArtistName" onclick="playSong(@song.SongId, this)">
+<div class="music-card" data-song-id="@song.SongId" data-title="@song.Title" data-artist="@song.ArtistName" data-cover="@song.CoverImageUrl" onclick="playSong(@song.SongId, this)">
+       <button class="add-btn" title="Playlist'e ekle" onclick="event.stopPropagation(); openPlaylistMenu(event, @song.SongId)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
         <div class="art @(string.IsNullOrEmpty(song.CoverImageUrl) ? palettes[rai % palettes.Length] : "")"
      style="@(string.IsNullOrEmpty(song.CoverImageUrl) ? "" : $"background-image:url('{song.CoverImageUrl}')")">
     <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
@@ -455,14 +558,102 @@
         <span id="mpDuration">0:00</span>
       </div>
     </div>
-    <div class="mp-right">
-      <div class="mp-wave" id="mpWave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+   <div class="mp-right">
+  <button class="mp-add-btn" title="Playlist'e ekle" onclick="openPlaylistMenu(event, currentSongId)">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <div class="mp-wave" id="mpWave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <button title="Kuyruk" style="background:none;border:none;color:var(--text-dim);cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h9M3 18h13M17 4v10M17 4l-3 3M17 4l3 3"/></svg></button>
     </div>
   </div>
-
+  <div class="upgrade-modal-overlay" id="upgradeModalOverlay">
+  <div class="upgrade-modal">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2 L12 12 L18 15"/><circle cx="12" cy="12" r="10"/>
+      </svg>
+    </div>
+    <p class="eyebrow">Sinyal kısıtlı</p>
+    <h3>Bu şarkı senin için kilitli.</h3>
+    <p id="upgradeModalMessage">Bu şarkıyı dinlemek için paketini yükseltmen gerekiyor.</p>
+    <div class="upgrade-modal-actions">
+      <button onclick="closeUpgradeModal()">Vazgeç</button>
+      <a href="/Packages/Index">Paketleri gör</a>
+    </div>
+  </div>
+</div>
+<div class="playlist-menu" id="playlistMenu">
+  <div class="menu-title">Playlist'e ekle</div>
+  <div id="playlistMenuItems"></div>
+</div>
+<div class="upgrade-modal-overlay" id="newPlaylistModalOverlay">
+  <div class="upgrade-modal playlist-name-modal">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+    </div>
+    <p class="eyebrow">Yeni koleksiyon</p>
+    <h3>Playlist'ine bir isim ver.</h3>
+    <input type="text" id="newPlaylistNameInput" placeholder="örn. Akşam Sarmalı" maxlength="60" />
+    <div class="upgrade-modal-actions">
+      <button onclick="closeNewPlaylistModal()">Vazgeç</button>
+      <button onclick="confirmNewPlaylist()" style="background:linear-gradient(135deg, var(--accent), var(--accent-2)); border:none; color:#fff;">Oluştur</button>
+    </div>
+  </div>
+</div>
 <script>
+    function promptNewPlaylist(){
+  document.getElementById('newPlaylistNameInput').value = '';
+  document.getElementById('newPlaylistModalOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('newPlaylistNameInput').focus(), 50);
+}
 
+function closeNewPlaylistModal(){
+  document.getElementById('newPlaylistModalOverlay').classList.remove('show');
+}
+
+async function confirmNewPlaylist(){
+  const input = document.getElementById('newPlaylistNameInput');
+  const name = input.value.trim();
+  if(!name){
+    input.style.borderColor = 'var(--accent-2)';
+    return;
+  }
+
+  closeNewPlaylistModal();
+
+  try{
+    const response = await fetch('/Home/CreatePlaylistAjax', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'RequestVerificationToken': getAntiForgeryToken()
+      },
+      body: JSON.stringify({ name: name })
+    });
+
+    const data = await response.json().catch(()=>null);
+
+    if(response.ok && data && data.playlistId){
+      userPlaylists.push({ id: data.playlistId, name: name });
+
+      if(pendingSongId !== null){
+        await addSongToPlaylistReal(data.playlistId);
+      }
+    }
+  } catch(e){
+    console.error(e);
+  }
+}
+   
+    function showUpgradeModal(message){
+  document.getElementById('upgradeModalMessage').textContent = message || 'Bu şarkıyı dinlemek için paketini yükseltmen gerekiyor.';
+  document.getElementById('upgradeModalOverlay').classList.add('show');
+}
+function closeUpgradeModal(){
+  document.getElementById('upgradeModalOverlay').classList.remove('show');
+}
   (function(){
     const canvas = document.getElementById('greetWave');
     if(!canvas) return;
@@ -472,8 +663,8 @@
     canvas.style.width='100%'; canvas.style.height='160px';
     window.addEventListener('resize', resize); resize();
     const lines=[
-      {amp:20,freq:.012,speed:.012,phase:0,color:'rgba(110,231,216,.35)'},
-      {amp:30,freq:.008,speed:.009,phase:1.6,color:'rgba(236,234,228,.16)'},
+      {amp:20,freq:.012,speed:.012,phase:0,color:'rgba(198,75,255,.35)'},
+      {amp:30,freq:.008,speed:.009,phase:1.6,color:'rgba(255,111,160,.20)'},
     ];
     let t=0; const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function draw(){
@@ -515,46 +706,90 @@
     return m + ':' + s;
   }
 
-  async function playSong(songId, cardEl){
-    try{
-      const response = await fetch('/Home/PlaySong', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'RequestVerificationToken': getAntiForgeryToken()
-        },
-        body: JSON.stringify({ songId: songId })
-      });
+ async function playSong(songId, cardEl){
+  try{
+    const response = await fetch('/Home/PlaySong', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'RequestVerificationToken': getAntiForgeryToken()
+      },
+      body: JSON.stringify({ songId: songId })
+    });
 
-      if(!response.ok){
-        const err = await response.json().catch(()=>({message:'Bu şarkıyı dinlemek için paketini yükseltmen gerekebilir.'}));
-        alert(err.message || 'Bu şarkı şu an oynatılamıyor.');
-        return;
-      }
+    if(!response.ok){
+  const err = await response.json().catch(()=>({message:'Bu şarkıyı dinlemek için paketini yükseltmen gerekebilir.'}));
+  showUpgradeModal(err.message);
+  return;
+}
 
-      const data = await response.json();
-      currentSongId = data.songId;
+   const data = await response.json();
+currentSongId = data.songId;
 
-      audio.src = data.audioUrl;
-      audio.play();
+audio.src = data.audioUrl;
 
-      mpTitle.textContent = data.title;
-      mpArtist.textContent = cardEl ? cardEl.dataset.artist : '';
-      if(cardEl){
+const startAt = cardEl && cardEl.dataset.position ? parseFloat(cardEl.dataset.position) : 0;
+
+function startPlayback(){
+  audio.play();
+  mpPlayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+  mpWave.classList.add('playing');
+}
+
+if(startAt > 0){
+  audio.addEventListener('canplay', function onCanPlay(){
+    audio.currentTime = startAt;
+    audio.removeEventListener('canplay', onCanPlay);
+    startPlayback();
+  });
+} else {
+  startPlayback();
+}
+
+mpTitle.textContent = data.title;
+mpArtist.textContent = cardEl ? cardEl.dataset.artist : '';
+
+if(cardEl){
+  const coverUrl = cardEl.dataset.cover;
+  if(coverUrl){
+    mpArt.className = 'mp-art';
+    mpArt.style.backgroundImage = `url('${coverUrl}')`;
+  } else {
+    const artClass = [...cardEl.querySelector('.art').classList].find(c => c.startsWith('p'));
+    mpArt.className = 'mp-art ' + (artClass || 'p1');
+    mpArt.style.backgroundImage = '';
+  }
+}
+
+if(progressSaveTimer) clearInterval(progressSaveTimer);
+progressSaveTimer = setInterval(saveCurrentProgress, 10000);
+    audio.play();
+
+    mpTitle.textContent = data.title;
+    mpArtist.textContent = cardEl ? cardEl.dataset.artist : '';
+
+    if(cardEl){
+      const coverUrl = cardEl.dataset.cover;
+      if(coverUrl){
+        mpArt.className = 'mp-art';
+        mpArt.style.backgroundImage = `url('${coverUrl}')`;
+      } else {
         const artClass = [...cardEl.querySelector('.art').classList].find(c => c.startsWith('p'));
         mpArt.className = 'mp-art ' + (artClass || 'p1');
+        mpArt.style.backgroundImage = '';
       }
-
-      mpPlayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
-      mpWave.classList.add('playing');
-
-      if(progressSaveTimer) clearInterval(progressSaveTimer);
-      progressSaveTimer = setInterval(saveCurrentProgress, 10000);
-    } catch(e){
-      console.error(e);
-      alert('Şarkı oynatılırken bir hata oluştu.');
     }
+
+    mpPlayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+    mpWave.classList.add('playing');
+
+    if(progressSaveTimer) clearInterval(progressSaveTimer);
+    progressSaveTimer = setInterval(saveCurrentProgress, 10000);
+  } catch(e){
+    console.error(e);
+    alert('Şarkı oynatılırken bir hata oluştu.');
   }
+}
 
   function togglePlayPause(){
     if(!audio.src) return;
@@ -578,12 +813,20 @@
   }
 
   audio.addEventListener('timeupdate', function(){
-    if(!audio.duration) return;
-    const percent = (audio.currentTime / audio.duration) * 100;
-    mpBarFill.style.width = percent + '%';
-    mpCurrentTime.textContent = formatTime(audio.currentTime);
-    mpDuration.textContent = formatTime(audio.duration);
-  });
+  if(!audio.duration) return;
+  const percent = (audio.currentTime / audio.duration) * 100;
+
+  mpBarFill.style.width = percent + '%';
+  mpCurrentTime.textContent = formatTime(audio.currentTime);
+  mpDuration.textContent = formatTime(audio.duration);
+
+  if(currentSongId !== null){
+    const activeCard = document.querySelector(`.music-card[data-song-id="${currentSongId}"] .progress-fill`);
+    if(activeCard){
+      activeCard.style.width = percent + '%';
+    }
+  }
+});
 
   audio.addEventListener('ended', function(){
     mpPlayIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
@@ -613,6 +856,85 @@
       ));
     }
   });
+  const userPlaylists = [
+@foreach (var p in Model.Playlists)
+{
+    @:{ id: @p.PlaylistId, name: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(p.Name)) },
+}
+];
+
+let pendingSongId = null;
+
+function openPlaylistMenu(evt, songId){
+  if(songId === null || songId === undefined){
+    return;
+  }
+  pendingSongId = songId;
+  const menu = document.getElementById('playlistMenu');
+  const itemsEl = document.getElementById('playlistMenuItems');
+
+  itemsEl.innerHTML = '';
+
+  const newItem = document.createElement('div');
+  newItem.className = 'menu-item menu-item-new';
+  newItem.innerHTML = '<span class="menu-plus">+</span> Yeni playlist';
+  newItem.onclick = () => promptNewPlaylist();
+  itemsEl.appendChild(newItem);
+
+  if(userPlaylists.length > 0){
+    const divider = document.createElement('div');
+    divider.className = 'menu-divider';
+    itemsEl.appendChild(divider);
+
+    userPlaylists.forEach(p=>{
+      const item = document.createElement('div');
+      item.className = 'menu-item';
+      item.textContent = p.name;
+      item.onclick = () => addSongToPlaylistReal(p.id);
+      itemsEl.appendChild(item);
+    });
+  }
+
+  const btnEl = evt.target.closest('.add-btn') || evt.target.closest('.mp-add-btn');
+  const rect = btnEl.getBoundingClientRect();
+  const isMiniPlayerBtn = btnEl.classList.contains('mp-add-btn');
+
+  if(isMiniPlayerBtn){
+    menu.style.top = (rect.top - 190) + 'px';
+  } else {
+    menu.style.top = (rect.bottom + 6) + 'px';
+  }
+  menu.style.left = Math.max(8, rect.right - 190) + 'px';
+  menu.classList.add('show');
+}
+function closePlaylistMenu(){
+  document.getElementById('playlistMenu').classList.remove('show');
+  pendingSongId = null;
+}
+
+async function addSongToPlaylistReal(playlistId){
+  if(pendingSongId === null) return;
+  try{
+    const response = await fetch('/Home/AddSongToPlaylist', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'RequestVerificationToken': getAntiForgeryToken()
+      },
+      body: JSON.stringify({ playlistId: playlistId, songId: pendingSongId })
+    });
+    closePlaylistMenu();
+  } catch(e){
+    console.error(e);
+    closePlaylistMenu();
+  }
+}
+document.addEventListener('click', function(e){
+  const menu = document.getElementById('playlistMenu');
+  if(menu.classList.contains('show') && !menu.contains(e.target) && !e.target.closest('.add-btn') && !e.target.closest('.mp-add-btn')){
+    closePlaylistMenu();
+  }
+});
 </script>
 </body>
 </html>
