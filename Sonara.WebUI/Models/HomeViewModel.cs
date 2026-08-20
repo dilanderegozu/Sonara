@@ -11,5 +11,7 @@ namespace Sonara.WebUI.Models
         public List<RecentSongDto> RecentlyAdded { get; set; } = new();
         public List<PopularArtistDto> PopularArtists { get; set; } = new();
         public string Greeting { get; set; }
+        public List<PlaylistDto> Playlists { get; set; } = new();
+        public List<ContinueListeningDto> ContinueListening { get; set; } = new();
     }
 }

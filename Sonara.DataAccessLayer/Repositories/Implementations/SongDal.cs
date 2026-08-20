@@ -11,6 +11,20 @@ namespace Sonara.DataAccessLayer.Repositories.Implementations
         {
         }
 
+        public async Task AddAllowedPlansAsync(int songId, List<int> planIds)
+        {
+            foreach (var planId in planIds)
+            {
+                _context.SongMembershipPlans.Add(new SongMembershipPlan
+                {
+                    SongId = songId,
+                    MembershipPlanId = planId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<List<Song>> GetSongsByArtistIdAsync(int artistId)
             => await _context.Songs
                 .Where(s => s.ArtistId == artistId)

@@ -26,11 +26,11 @@ namespace Sonara.WebApi.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId is null) return Unauthorized();
 
-            var plan = await _userMembershipDal.GetByIdAsync(dto.MembershipPlanId);
+            var plan = await _membershipPlanDal.GetByIdAsync(dto.MembershipPlanId);  
             if (plan is null) return BadRequest(new { Message = "Geçersiz paket." });
 
             var oldActiveMembership = await _userMembershipDal.GetAllActiveByUserIdAsync(userId);
-            foreach (var old in  oldActiveMembership)
+            foreach (var old in oldActiveMembership)
             {
                 old.IsActive = false;
                 old.EndDate = DateTime.UtcNow;
@@ -42,16 +42,15 @@ namespace Sonara.WebApi.Controllers
                 UserId = userId,
                 MembershipPlanId = plan.Id,
                 StartDate = DateTime.UtcNow,
-                EndDate = DateTime.UtcNow.AddDays(plan.MembershipPlan.DurationInDays),
+                EndDate = DateTime.UtcNow.AddDays(plan.DurationInDays),  
                 IsActive = true
             };
 
             await _userMembershipDal.AddAsync(newMembership);
             await _userMembershipDal.SaveChangesAsync();
 
-            return Ok(new { Message = $"{plan.MembershipPlan.Name} paketi başarıyla aktive edildi.", ExpiresAt = newMembership.EndDate });
+            return Ok(new { Message = $"{plan.Name} paketi başarıyla aktive edildi.", ExpiresAt = newMembership.EndDate });  
         }
-
         [HttpGet("my-membership")]
         public async Task<IActionResult> GetMyMembership()
         {
@@ -78,6 +77,7 @@ namespace Sonara.WebApi.Controllers
             {
                 p.Id,
                 p.Name,
+                p.Level,
                 p.Price,
                 p.DurationInDays,
                 p.MaxDeviceCount,

@@ -1,6 +1,7 @@
 ﻿@model Sonara.WebUI.Models.HomeViewModel
 @{
     Layout = null;
+    var palettes = new[] { "p1", "p2", "p3", "p4", "p5", "p6" };
 }
 <!DOCTYPE html>
 <html lang="tr">
@@ -21,12 +22,11 @@
   html,body{margin:0;padding:0;}
   body{
     background:var(--bg); color:var(--text); font-family:'Inter',sans-serif;
-    min-height:100vh;
+    min-height:100vh;}
   }
   @@media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; animation-iteration-count:1 !important;} }
   a{color:inherit;}
 
-  /* ---------- Shell / Nav ---------- */
   .topbar{
     position:sticky; top:0; z-index:20; display:flex; align-items:center;
     justify-content:space-between; padding:20px clamp(20px,4vw,56px);
@@ -54,7 +54,6 @@
 
   main{padding:0 clamp(20px,4vw,56px) 140px;}
 
-  /* ---------- Greeting / hero ---------- */
   .greet{padding:56px 0 40px; position:relative; overflow:hidden;}
   .greet-eyebrow{
     font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
@@ -68,7 +67,6 @@
   .greet-canvas{position:absolute; right:0; top:0; bottom:0; width:38%; opacity:.4; pointer-events:none;}
   @@media (max-width:900px){ .greet-canvas{display:none;} }
 
-  /* ---------- Section header ---------- */
   .section{margin-bottom:52px;}
   .section-head{
     display:flex; align-items:baseline; justify-content:space-between; margin-bottom:20px;
@@ -82,14 +80,12 @@
   .section-head .see-all{font-size:12.5px; color:var(--text-dim); text-decoration:none; border-bottom:1px solid transparent; transition:.2s;}
   .section-head .see-all:hover{color:var(--accent); border-color:var(--accent);}
 
-  /* ---------- Horizontal scroller ---------- */
   .scroller{
     display:flex; gap:18px; overflow-x:auto; padding-bottom:6px; scroll-snap-type:x proximity;
     -ms-overflow-style:none; scrollbar-width:none;
   }
   .scroller::-webkit-scrollbar{display:none;}
 
-  /* ---------- Music card ---------- */
   .music-card{
     flex:0 0 168px; scroll-snap-align:start; cursor:pointer; position:relative;
   }
@@ -97,6 +93,7 @@
     width:168px; height:168px; border-radius:2px; position:relative; overflow:hidden;
     display:flex; align-items:flex-end; padding:12px;
     transition:transform .3s cubic-bezier(.2,.7,.2,1);
+    background-size:cover; background-position:center;
   }
   .music-card:hover .art{transform:translateY(-4px);}
   .art::after{
@@ -117,18 +114,17 @@
   .progress-wrap{margin-top:8px; height:2px; background:var(--line); border-radius:2px; overflow:hidden;}
   .progress-fill{height:100%; background:var(--accent);}
 
-  /* ---------- Artist card (circular) ---------- */
   .artist-card{flex:0 0 128px; scroll-snap-align:start; cursor:pointer; text-align:center;}
   .artist-ring{
     width:112px; height:112px; border-radius:50%; margin:0 auto; position:relative;
     display:flex; align-items:center; justify-content:center; overflow:hidden;
     transition:transform .3s cubic-bezier(.2,.7,.2,1);
+    background-size:cover; background-position:center;
   }
   .artist-card:hover .artist-ring{transform:translateY(-4px);}
   .artist-card .title{font-size:13px; font-weight:500; margin-top:12px;}
   .artist-card .meta{font-size:11.5px; color:var(--text-dim);}
 
-  /* ---------- Playlist tile (wide) ---------- */
   .playlist-card{
     flex:0 0 280px; scroll-snap-align:start; cursor:pointer;
     background:var(--surface); border:1px solid var(--line); padding:16px; border-radius:2px;
@@ -139,7 +135,6 @@
   .playlist-card .title{font-size:13.5px; font-weight:500;}
   .playlist-card .meta{font-size:11.5px; color:var(--text-dim); margin-top:3px;}
 
-  /* ---------- Palettes for generated art ---------- */
   .p1{background:linear-gradient(155deg,#2B3F3C,#17211F);}
   .p2{background:linear-gradient(155deg,#3A2F22,#1D1815);}
   .p3{background:linear-gradient(155deg,#28304A,#161A26);}
@@ -147,7 +142,6 @@
   .p5{background:linear-gradient(155deg,#22353C,#131F23);}
   .p6{background:linear-gradient(155deg,#332538,#191219);}
 
-  /* ---------- Mood tiles ---------- */
   .mood-tile{
     flex:0 0 190px; height:104px; border-radius:3px; padding:16px;
     display:flex; flex-direction:column; justify-content:flex-end; cursor:pointer;
@@ -165,20 +159,12 @@
   .m-olive{background:#C7CE8E;}
   .m-sky{background:#93C6E0;}
 
-  /* ---------- Membership banner ---------- */
   .plan-banner{
     display:flex; align-items:center; justify-content:space-between; gap:24px;
     background:var(--surface); border:1px solid var(--line); border-radius:3px;
     padding:20px 26px; margin-bottom:44px;
   }
   .plan-left{display:flex; align-items:center; gap:20px;}
-  .plan-bars{display:flex; align-items:flex-end; gap:5px; height:30px;}
-  .plan-bars i{width:6px; border-radius:1px; background:var(--line); display:block;}
-  .plan-bars i:nth-child(1){height:30%;}
-  .plan-bars i:nth-child(2){height:55%;}
-  .plan-bars i:nth-child(3){height:78%;}
-  .plan-bars i:nth-child(4){height:100%;}
-  .plan-bars i.on{background:var(--accent);}
   .plan-info .eyebrow-sm{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim);}
   .plan-info .plan-name{font-family:'Fraunces',serif; font-style:italic; font-weight:500; font-size:19px; margin-top:2px;}
   .plan-info .plan-sub{font-size:12.5px; color:var(--text-dim); margin-top:3px;}
@@ -190,7 +176,6 @@
   .plan-cta:hover{filter:brightness(1.08);}
   @@media (max-width:640px){ .plan-banner{flex-direction:column; align-items:flex-start;} }
 
-  /* ---------- Mini player ---------- */
   .miniplayer{
     position:fixed; left:0; right:0; bottom:0; z-index:30;
     background:rgba(24,26,33,0.94); backdrop-filter:blur(14px);
@@ -199,7 +184,7 @@
     padding:12px clamp(20px,4vw,56px);
   }
   .mp-track{display:flex; align-items:center; gap:12px; width:240px; flex:none;}
-  .mp-art{width:44px; height:44px; border-radius:2px; flex:none;}
+  .mp-art{width:44px; height:44px; border-radius:2px; flex:none; background-size:cover; background-position:center;}
   .mp-title{font-size:13px; font-weight:500;}
   .mp-artist{font-size:11.5px; color:var(--text-dim);}
 
@@ -212,13 +197,14 @@
     display:flex; align-items:center; justify-content:center; color:#06110F !important;
   }
   .mp-progress{display:flex; align-items:center; gap:8px; width:100%;}
-  .mp-progress span{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-faint);}
-  .mp-bar{flex:1; height:2px; background:var(--line); position:relative; border-radius:2px;}
-  .mp-bar i{position:absolute; left:0; top:0; bottom:0; width:38%; background:var(--accent); border-radius:2px;}
+  .mp-progress span{font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-faint); min-width:32px; text-align:center;}
+  .mp-bar{flex:1; height:2px; background:var(--line); position:relative; border-radius:2px; cursor:pointer;}
+  .mp-bar i{position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--accent); border-radius:2px;}
 
   .mp-right{width:240px; flex:none; display:flex; justify-content:flex-end; align-items:center; gap:16px;}
   .mp-wave{display:flex; align-items:flex-end; gap:2px; height:16px;}
-  .mp-wave i{width:2px; background:var(--accent); border-radius:1px; animation:mpwave 1s ease-in-out infinite;}
+  .mp-wave i{width:2px; background:var(--accent); border-radius:1px; animation:mpwave 1s ease-in-out infinite; animation-play-state:paused;}
+  .mp-wave.playing i{animation-play-state:running;}
   .mp-wave i:nth-child(1){height:5px; animation-delay:0ms;}
   .mp-wave i:nth-child(2){height:12px; animation-delay:120ms;}
   .mp-wave i:nth-child(3){height:8px; animation-delay:240ms;}
@@ -226,7 +212,6 @@
   .mp-wave i:nth-child(5){height:6px; animation-delay:480ms;}
   @@keyframes mpwave{0%,100%{transform:scaleY(.5);}50%{transform:scaleY(1);}}
 
-  /* ---------- Entrance ---------- */
   .section, .greet{opacity:0; transform:translateY(12px); animation:rise .6s cubic-bezier(.2,.7,.2,1) forwards;}
   .greet{animation-delay:.02s;}
   .section:nth-of-type(1){animation-delay:.08s;}
@@ -247,11 +232,13 @@
 </head>
 <body>
 
+  @Html.AntiForgeryToken()
+
   <div class="topbar">
     <div style="display:flex; align-items:center; gap:48px;">
       <div class="mark">SON<span>A</span>RA</div>
       <div class="nav-links">
-        <a href="#" class="active">Keşfet</a>
+        <a href="/Home/Index" class="active">Keşfet</a>
         <a href="#">Kütüphane</a>
         <a href="#">Sanatçılar</a>
         <a href="#">Türler</a>
@@ -269,32 +256,58 @@
   <main>
     <div class="greet">
       <canvas class="greet-canvas" id="greetWave"></canvas>
-      
-            <h1>@Model.Greeting, @Model.FirstName. Kaldığın yerden devam edelim mi?</h1>
+      <h1>@Model.Greeting, @Model.FirstName. Kaldığın yerden devam edelim mi?</h1>
     </div>
 
-        <div class="plan-banner">
-            <div class="plan-left">
-                <div style="width:100px; height:4px; background:var(--line); border-radius:2px; overflow:hidden;">
-                    <div style="height:100%; width:@(Model.PlanLevel * 100 / Model.MaxPlanLevel)%; background:var(--accent);"></div>
-                </div>
-                <div class="plan-info">
-                    <div class="eyebrow-sm">Mevcut paket</div>
-                    <div class="plan-name">@Model.PlanName</div>
-                    <div class="plan-sub">
-                        @if (Model.PlanLevel < Model.MaxPlanLevel)
-                        {
-                            <text>Bir üst pakette daha fazla özellik seni bekliyor.</text>
-                        }
-                        else
-                        {
-                            <text>En üst pakettesin — tüm özellikler açık.</text>
-                        }
-                    </div>
-                </div>
-            </div>
-            <a asp-controller="Packages" asp-action="Index" class="plan-cta" style="text-decoration:none; display:inline-block;">Paketini yükselt</a>
+    <div class="plan-banner">
+      <div class="plan-left">
+        <div style="width:100px; height:4px; background:var(--line); border-radius:2px; overflow:hidden;">
+          <div style="height:100%; width:@(Model.PlanLevel * 100 / Model.MaxPlanLevel)%; background:var(--accent);"></div>
         </div>
+        <div class="plan-info">
+          <div class="eyebrow-sm">Mevcut paket</div>
+          <div class="plan-name">@Model.PlanName</div>
+          <div class="plan-sub">
+            @if (Model.PlanLevel < Model.MaxPlanLevel)
+            {
+                <text>Bir üst pakette daha fazla özellik seni bekliyor.</text>
+            }
+            else
+            {
+                <text>En üst pakettesin — tüm özellikler açık.</text>
+            }
+          </div>
+        </div>
+      </div>
+      <a asp-controller="Packages" asp-action="Index" class="plan-cta" style="text-decoration:none; display:inline-block;">Paketini yükselt</a>
+    </div>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="titles"><h2>Dinlemeye devam et</h2><span class="count">@Model.ContinueListening.Count.ToString("00")</span></div>
+        <a href="#" class="see-all">Tümünü gör</a>
+      </div>
+      <div class="scroller">
+        @{ var ci = 0; }
+        @foreach (var item in Model.ContinueListening)
+        {
+           <div class="music-card" data-song-id="@item.SongId" data-title="@item.Title" data-artist="@item.ArtistName" onclick="playSong(@item.SongId, this)">
+    <div class="art @(string.IsNullOrEmpty(item.CoverImageUrl) ? palettes[ci % palettes.Length] : "")"
+         style="@(string.IsNullOrEmpty(item.CoverImageUrl) ? "" : $"background-image:url('{item.CoverImageUrl}')")">
+        <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+    </div>
+    <div class="title">@item.Title</div>
+    <div class="meta">@item.ArtistName</div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:@(item.ProgressPercent)%"></div></div>
+</div>
+            ci++;
+        }
+        @if (!Model.ContinueListening.Any())
+        {
+            <p style="color:var(--text-dim); font-size:13px;">Henüz dinleme geçmişin yok.</p>
+        }
+      </div>
+    </section>
 
     <section class="section">
       <div class="section-head">
@@ -313,34 +326,23 @@
 
     <section class="section">
       <div class="section-head">
-        <div class="titles"><h2>Dinlemeye devam et</h2><span class="count">04</span></div>
+        <div class="titles"><h2>Son oluşturulan playlistler</h2></div>
         <a href="#" class="see-all">Tümünü gör</a>
       </div>
       <div class="scroller">
-        <div class="music-card">
-          <div class="art p1"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Kırık Aynalar</div>
-          <div class="meta">Nehir · Album</div>
-          <div class="progress-wrap"><div class="progress-fill" style="width:64%"></div></div>
-        </div>
-        <div class="music-card">
-          <div class="art p2"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Sahil Notları</div>
-          <div class="meta">Kıyı Kolektifi</div>
-          <div class="progress-wrap"><div class="progress-fill" style="width:22%"></div></div>
-        </div>
-        <div class="music-card">
-          <div class="art p3"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Gece Treni</div>
-          <div class="meta">Metroline</div>
-          <div class="progress-wrap"><div class="progress-fill" style="width:88%"></div></div>
-        </div>
-        <div class="music-card">
-          <div class="art p5"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Yankı Odası EP</div>
-          <div class="meta">Toprak Ana</div>
-          <div class="progress-wrap"><div class="progress-fill" style="width:41%"></div></div>
-        </div>
+        @{ var pi = 0; }
+        @foreach (var playlist in Model.Playlists)
+        {
+            <div class="playlist-card">
+                <div class="mini-art @palettes[pi % palettes.Length]"></div>
+                <div><div class="title">@playlist.Name</div><div class="meta">Sen · @playlist.SongCount parça</div></div>
+            </div>
+            pi++;
+        }
+        @if (!Model.Playlists.Any())
+        {
+            <p style="color:var(--text-dim); font-size:13px;">Henüz playlist oluşturmadın.</p>
+        }
       </div>
     </section>
 
@@ -377,125 +379,90 @@
         </div>
       </div>
     </section>
-
-    <section class="section">
-      <div class="section-head">
-        <div class="titles"><h2>Popüler sanatçılar</h2></div>
-        <a href="#" class="see-all">Tümünü gör</a>
-      </div>
-      <div class="scroller">
+<section class="section">
+  <div class="section-head">
+    <div class="titles"><h2>Popüler sanatçılar</h2></div>
+    <a href="#" class="see-all">Tümünü gör</a>
+  </div>
+  <div class="scroller">
+    @{ var pai = 0; }
+    @foreach (var artist in Model.PopularArtists)
+    {
         <div class="artist-card">
-          <div class="artist-ring p5"></div>
-          <div class="title">Nehir</div>
-          <div class="meta">2.4M dinleyici</div>
+                        <div class="artist-ring @(string.IsNullOrEmpty(artist.ImageUrl) ? palettes[pai % palettes.Length] : "")"
+                             style="@(string.IsNullOrEmpty(artist.ImageUrl) ? "" : $"background-image:url('{artist.ImageUrl}')")"></div>
+            <div class="title">@artist.Name</div>
+            <div class="meta">@(artist.MonthlyListeners >= 1000000 ? $"{artist.MonthlyListeners / 1000000.0:0.#}M" : $"{artist.MonthlyListeners / 1000}K") dinleyici</div>
         </div>
-        <div class="artist-card">
-          <div class="artist-ring p2"></div>
-          <div class="title">Metroline</div>
-          <div class="meta">1.1M dinleyici</div>
+        pai++;
+    }
+    @if (!Model.PopularArtists.Any())
+    {
+        <p style="color:var(--text-dim); font-size:13px;">Henüz sanatçı eklenmemiş.</p>
+    }
+  </div>
+</section>
+<section class="section">
+  <div class="section-head">
+    <div class="titles"><h2>Son eklenenler</h2></div>
+    <a href="#" class="see-all">Tümünü gör</a>
+  </div>
+  <div class="scroller">
+    @{ var rai = 0; }
+    @foreach (var song in Model.RecentlyAdded)
+    {
+        <div class="music-card" data-song-id="@song.SongId" data-title="@song.Title" data-artist="@song.ArtistName" onclick="playSong(@song.SongId, this)">
+        <div class="art @(string.IsNullOrEmpty(song.CoverImageUrl) ? palettes[rai % palettes.Length] : "")"
+     style="@(string.IsNullOrEmpty(song.CoverImageUrl) ? "" : $"background-image:url('{song.CoverImageUrl}')")">
+    <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+</div>
+            <div class="title">@song.Title</div>
+            <div class="meta">@song.ArtistName</div>
         </div>
-        <div class="artist-card">
-          <div class="artist-ring p6"></div>
-          <div class="title">Toprak Ana</div>
-          <div class="meta">870K dinleyici</div>
-        </div>
-        <div class="artist-card">
-          <div class="artist-ring p3"></div>
-          <div class="title">Kıyı Kolektifi</div>
-          <div class="meta">640K dinleyici</div>
-        </div>
-        <div class="artist-card">
-          <div class="artist-ring p4"></div>
-          <div class="title">Sisli Tepe</div>
-          <div class="meta">410K dinleyici</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <div class="titles"><h2>Son oluşturulan playlistler</h2></div>
-        <a href="#" class="see-all">Tümünü gör</a>
-      </div>
-      <div class="scroller">
-        <div class="playlist-card">
-          <div class="mini-art p1"></div>
-          <div><div class="title">Sabah Rutini</div><div class="meta">Sen · 18 parça</div></div>
-        </div>
-        <div class="playlist-card">
-          <div class="mini-art p6"></div>
-          <div><div class="title">Konsantrasyon</div><div class="meta">Sen · 34 parça</div></div>
-        </div>
-        <div class="playlist-card">
-          <div class="mini-art p5"></div>
-          <div><div class="title">Yol Notları</div><div class="meta">Sen · 22 parça</div></div>
-        </div>
-        <div class="playlist-card">
-          <div class="mini-art p4"></div>
-          <div><div class="title">Akşam Sarmalı</div><div class="meta">Sen · 27 parça</div></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <div class="titles"><h2>Son eklenenler</h2></div>
-        <a href="#" class="see-all">Tümünü gör</a>
-      </div>
-      <div class="scroller">
-        <div class="music-card">
-          <div class="art p3"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Işık Katmanları</div>
-          <div class="meta">Sisli Tepe</div>
-        </div>
-        <div class="music-card">
-          <div class="art p1"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Derin Sessizlik</div>
-          <div class="meta">Nehir</div>
-        </div>
-        <div class="music-card">
-          <div class="art p2"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Kum Saati</div>
-          <div class="meta">Toprak Ana</div>
-        </div>
-        <div class="music-card">
-          <div class="art p5"><div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <div class="title">Uzak Sinyal</div>
-          <div class="meta">Metroline</div>
-        </div>
-      </div>
-    </section>
+        rai++;
+    }
+    @if (!Model.RecentlyAdded.Any())
+    {
+        <p style="color:var(--text-dim); font-size:13px;">Henüz şarkı eklenmemiş.</p>
+    }
+  </div>
+</section>
   </main>
+
+  <audio id="globalPlayer" preload="none"></audio>
 
   <div class="miniplayer">
     <div class="mp-track">
-      <div class="mp-art p1"></div>
+      <div class="mp-art p1" id="mpArt"></div>
       <div>
-        <div class="mp-title">Kırık Aynalar</div>
-        <div class="mp-artist">Nehir</div>
+        <div class="mp-title" id="mpTitle">Bir şarkı seç</div>
+        <div class="mp-artist" id="mpArtist">—</div>
       </div>
     </div>
     <div class="mp-center">
       <div class="mp-controls">
         <button title="Karıştır"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
         <button title="Önceki"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 6L9 12l11 6z"/></svg></button>
-        <button class="mp-play" title="Duraklat"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
+        <button class="mp-play" id="mpPlayBtn" title="Oynat/Duraklat" onclick="togglePlayPause()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" id="mpPlayIcon"><path d="M8 5v14l11-7z"/></svg>
+        </button>
         <button title="Sonraki"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM4 6l11 6-11 6z"/></svg></button>
         <button title="Tekrarla"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
       </div>
       <div class="mp-progress">
-        <span>1:42</span>
-        <div class="mp-bar"><i></i></div>
-        <span>4:29</span>
+        <span id="mpCurrentTime">0:00</span>
+        <div class="mp-bar" id="mpBar" onclick="seekTo(event)"><i id="mpBarFill"></i></div>
+        <span id="mpDuration">0:00</span>
       </div>
     </div>
     <div class="mp-right">
-      <div class="mp-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="mp-wave" id="mpWave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <button title="Kuyruk" style="background:none;border:none;color:var(--text-dim);cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h9M3 18h13M17 4v10M17 4l-3 3M17 4l3 3"/></svg></button>
     </div>
   </div>
 
 <script>
+
   (function(){
     const canvas = document.getElementById('greetWave');
     if(!canvas) return;
@@ -523,6 +490,129 @@
     }
     draw();
   })();
+
+  const audio = document.getElementById('globalPlayer');
+  const mpTitle = document.getElementById('mpTitle');
+  const mpArtist = document.getElementById('mpArtist');
+  const mpArt = document.getElementById('mpArt');
+  const mpPlayIcon = document.getElementById('mpPlayIcon');
+  const mpWave = document.getElementById('mpWave');
+  const mpBarFill = document.getElementById('mpBarFill');
+  const mpCurrentTime = document.getElementById('mpCurrentTime');
+  const mpDuration = document.getElementById('mpDuration');
+
+  let currentSongId = null;
+  let progressSaveTimer = null;
+
+  function getAntiForgeryToken(){
+    const el = document.querySelector('input[name="__RequestVerificationToken"]');
+    return el ? el.value : '';
+  }
+
+  function formatTime(totalSeconds){
+    const s = Math.floor(totalSeconds % 60).toString().padStart(2,'0');
+    const m = Math.floor(totalSeconds / 60);
+    return m + ':' + s;
+  }
+
+  async function playSong(songId, cardEl){
+    try{
+      const response = await fetch('/Home/PlaySong', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': getAntiForgeryToken()
+        },
+        body: JSON.stringify({ songId: songId })
+      });
+
+      if(!response.ok){
+        const err = await response.json().catch(()=>({message:'Bu şarkıyı dinlemek için paketini yükseltmen gerekebilir.'}));
+        alert(err.message || 'Bu şarkı şu an oynatılamıyor.');
+        return;
+      }
+
+      const data = await response.json();
+      currentSongId = data.songId;
+
+      audio.src = data.audioUrl;
+      audio.play();
+
+      mpTitle.textContent = data.title;
+      mpArtist.textContent = cardEl ? cardEl.dataset.artist : '';
+      if(cardEl){
+        const artClass = [...cardEl.querySelector('.art').classList].find(c => c.startsWith('p'));
+        mpArt.className = 'mp-art ' + (artClass || 'p1');
+      }
+
+      mpPlayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+      mpWave.classList.add('playing');
+
+      if(progressSaveTimer) clearInterval(progressSaveTimer);
+      progressSaveTimer = setInterval(saveCurrentProgress, 10000);
+    } catch(e){
+      console.error(e);
+      alert('Şarkı oynatılırken bir hata oluştu.');
+    }
+  }
+
+  function togglePlayPause(){
+    if(!audio.src) return;
+    if(audio.paused){
+      audio.play();
+      mpPlayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+      mpWave.classList.add('playing');
+    } else {
+      audio.pause();
+      mpPlayIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      mpWave.classList.remove('playing');
+    }
+  }
+
+  function seekTo(evt){
+    if(!audio.duration) return;
+    const bar = document.getElementById('mpBar');
+    const rect = bar.getBoundingClientRect();
+    const ratio = (evt.clientX - rect.left) / rect.width;
+    audio.currentTime = ratio * audio.duration;
+  }
+
+  audio.addEventListener('timeupdate', function(){
+    if(!audio.duration) return;
+    const percent = (audio.currentTime / audio.duration) * 100;
+    mpBarFill.style.width = percent + '%';
+    mpCurrentTime.textContent = formatTime(audio.currentTime);
+    mpDuration.textContent = formatTime(audio.duration);
+  });
+
+  audio.addEventListener('ended', function(){
+    mpPlayIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    mpWave.classList.remove('playing');
+    if(progressSaveTimer) clearInterval(progressSaveTimer);
+  });
+
+  async function saveCurrentProgress(){
+    if(currentSongId === null || audio.paused) return;
+    try{
+      await fetch('/Home/SaveProgress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': getAntiForgeryToken()
+        },
+        body: JSON.stringify({ songId: currentSongId, positionSeconds: Math.floor(audio.currentTime) })
+      });
+    } catch(e){ console.error(e); }
+  }
+
+  window.addEventListener('beforeunload', function(){
+    if(currentSongId !== null && !audio.paused){
+      navigator.sendBeacon('/Home/SaveProgress', new Blob(
+        [JSON.stringify({ songId: currentSongId, positionSeconds: Math.floor(audio.currentTime) })],
+        { type: 'application/json' }
+      ));
+    }
+  });
 </script>
 </body>
 </html>

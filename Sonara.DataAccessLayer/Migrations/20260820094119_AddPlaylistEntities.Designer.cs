@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sonara.DataAccessLayer.Context;
 
@@ -11,9 +12,11 @@ using Sonara.DataAccessLayer.Context;
 namespace Sonara.DataAccessLayer.Migrations
 {
     [DbContext(typeof(SonaraDbContext))]
-    partial class SonaraDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260820094119_AddPlaylistEntities")]
+    partial class AddPlaylistEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -364,37 +367,6 @@ namespace Sonara.DataAccessLayer.Migrations
                     b.ToTable("MembershipPlans");
                 });
 
-            modelBuilder.Entity("Sonara.CoreLayer.Entities.PlaybackHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("LastPlayedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PositionSeconds")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SongId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SongId");
-
-                    b.HasIndex("UserId", "SongId")
-                        .IsUnique();
-
-                    b.ToTable("PlaybackHistories");
-                });
-
             modelBuilder.Entity("Sonara.CoreLayer.Entities.Playlist", b =>
                 {
                     b.Property<int>("PlaylistId")
@@ -606,25 +578,6 @@ namespace Sonara.DataAccessLayer.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Sonara.CoreLayer.Entities.PlaybackHistory", b =>
-                {
-                    b.HasOne("Sonara.CoreLayer.Entities.Song", "Song")
-                        .WithMany()
-                        .HasForeignKey("SongId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Sonara.CoreLayer.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Song");
 
                     b.Navigation("User");
                 });

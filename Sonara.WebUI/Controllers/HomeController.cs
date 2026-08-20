@@ -26,7 +26,8 @@ namespace Sonara.WebUI.Controllers
             var membership = await _apiClient.GetMyMembershipAsync(jwtToken);
             var recentSongs = await _apiClient.GetRecentlyAddedAsync(jwtToken);
             var popularArtists = await _apiClient.GetPopularArtistsAsync(jwtToken);
-
+            var playlists = await _apiClient.GetMyPlaylistsAsync(jwtToken);
+            var continueListening = await _apiClient.GetContinueListeningAsync(jwtToken);
             var model = new HomeViewModel
             {
                 FirstName = User.FindFirstValue(ClaimTypes.GivenName) ?? "Dinleyici",
@@ -35,12 +36,39 @@ namespace Sonara.WebUI.Controllers
                 PlanLevel = membership?.Level ?? 0,
                 MaxPlanLevel = (membership?.MaxLevel ?? 0) > 0 ? membership!.MaxLevel : 1,
                 RecentlyAdded = recentSongs ?? new List<RecentSongDto>(),
-                PopularArtists = popularArtists ?? new List<PopularArtistDto>()
+                PopularArtists = popularArtists ?? new List<PopularArtistDto>(),
+                Playlists = playlists ?? new List<PlaylistDto>(),
+                ContinueListening = continueListening ?? new List<ContinueListeningDto>()
             };
 
             return View(model);
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PlaySong([FromBody] PlaySongRequest req)
+        {
+            var jwtToken = User.FindFirstValue("JwtToken");
+            if (jwtToken is null) return Unauthorized();
 
+            var (success, data, error) = await _apiClient.PlaySongAsync(jwtToken, req.SongId);
+            if (!success) return StatusCode(403, new { message = error });
+
+            return Ok(data);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveProgress([FromBody] SaveProgressRequest req)
+        {
+            var jwtToken = User.FindFirstValue("JwtToken");
+            if (jwtToken is null) return Unauthorized();
+
+            await _apiClient.SaveProgressAsync(jwtToken, req.SongId, req.PositionSeconds);
+            return Ok();
+        }
+
+        public class PlaySongRequest { public int SongId { get; set; } }
+        public class SaveProgressRequest { public int SongId { get; set; } public int PositionSeconds { get; set; } }
         private static string GetTimeBasedGreeting()
         {
             var hour = DateTime.Now.Hour;

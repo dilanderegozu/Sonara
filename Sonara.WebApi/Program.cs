@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Sonara.CoreLayer;
 using Sonara.CoreLayer.Entities;
 using Sonara.CoreLayer.Interfaces;
 using Sonara.DataAccessLayer.Context;
@@ -25,6 +26,9 @@ builder.Services.AddScoped<IMembershipPlanDal, MembershipPlanDal>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IDeviceSessionDal, DeviceSessionDal>();
 builder.Services.AddScoped<IDashboardDal, DashboardDal>();
+builder.Services.AddScoped<IPlaylistDal, PlaylistDal>();
+builder.Services.AddScoped<IPlaybackHistoryDal, PlaybackHistoryDal>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 builder.Services.AddDbContext<SonaraDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 

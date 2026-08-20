@@ -37,7 +37,6 @@ namespace Sonara.WebUI.Services
 
             return await response.Content.ReadFromJsonAsync<List<RecentSongDto>>();
         }
-
         public async Task<List<PopularArtistDto>?> GetPopularArtistsAsync(string jwtToken, int count = 6)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"api/homefeed/popular-artists?count={count}");
@@ -85,8 +84,7 @@ namespace Sonara.WebUI.Services
 
             return await response.Content.ReadFromJsonAsync<List<PlanDto>>();
         }
-
-        public async Task<bool> PurchasePlanAsync(string jwtToken, int planId)
+        public async Task<(bool Success, string? Error)> PurchasePlanAsync(string jwtToken, int planId)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, "api/membership/purchase")
             {
@@ -95,11 +93,79 @@ namespace Sonara.WebUI.Services
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
 
             var response = await _httpClient.SendAsync(request);
-            return response.IsSuccessStatusCode;
+            var body = await response.Content.ReadAsStringAsync();
+
+            return (response.IsSuccessStatusCode, response.IsSuccessStatusCode ? null : body);
         }
+        public async Task<List<PlaylistDto>?> GetMyPlaylistsAsync(string jwtToken, int count = 6)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"api/homefeed/my-playlists?count={count}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
 
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) return null;
+
+            return await response.Content.ReadFromJsonAsync<List<PlaylistDto>>();
+        }
+        public async Task<List<ContinueListeningDto>?> GetContinueListeningAsync(string jwtToken, int count = 4)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"api/homefeed/continue-listening?count={count}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) return null;
+
+            return await response.Content.ReadFromJsonAsync<List<ContinueListeningDto>>();
+        }
+        public async Task<(bool Success, PlaySongResultDto? Data, string? Error)> PlaySongAsync(string jwtToken, int songId)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"api/song/{songId}/play");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+            var response = await _httpClient.SendAsync(request);
+            var body = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                return (false, null, body);
+
+            var data = System.Text.Json.JsonSerializer.Deserialize<PlaySongResultDto>(body,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            return (true, data, null);
+        }
+        public async Task SaveProgressAsync(string jwtToken, int songId, int positionSeconds)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/homefeed/playback-progress")
+            {
+                Content = JsonContent.Create(new { SongId = songId, PositionSeconds = positionSeconds })
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+            await _httpClient.SendAsync(request);
+        }
     }
-
+    public class PlaySongResultDto
+    {
+        public int SongId { get; set; }
+        public string Title { get; set; }
+        public string AudioUrl { get; set; }
+    }
+    public class ContinueListeningDto
+    {
+        public int SongId { get; set; }
+        public string Title { get; set; }
+        public string ArtistName { get; set; }
+        public int PositionSeconds { get; set; }
+        public int TotalSeconds { get; set; }
+        public int ProgressPercent { get; set; }
+        public string? CoverImageUrl { get; set; }
+    }
+    public class PlaylistDto
+    {
+        public int PlaylistId { get; set; }
+        public string Name { get; set; }
+        public int SongCount { get; set; }
+    }
     public class LoginResultDto
     {
         public bool Success { get; set; }
@@ -111,6 +177,7 @@ namespace Sonara.WebUI.Services
         public int SongId { get; set; }
         public string Title { get; set; }
         public string ArtistName { get; set; }
+        public string? CoverImageUrl { get; set; }
     }
 
     public class PopularArtistDto
@@ -118,6 +185,7 @@ namespace Sonara.WebUI.Services
         public int ArtistId { get; set; }
         public string Name { get; set; }
         public long MonthlyListeners { get; set; }
+        public string? ImageUrl { get; set; }
     }
 
     public class MyMembershipDto
@@ -131,6 +199,7 @@ namespace Sonara.WebUI.Services
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public int Level { get; set; }   
         public decimal Price { get; set; }
         public int DurationInDays { get; set; }
         public int MaxDeviceCount { get; set; }
