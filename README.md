@@ -1,44 +1,62 @@
 <div align="center">
 
-  <h1>🎧 SONARA</h1>
-  <p><strong>Sanatçı Odaklı, Çok Katmanlı (Tiered) Üyelik ve SaaS Yönetim Mimarisine Sahip Dijital Müzik Platformu</strong></p>
+# 🎧 SONARA
 
-  <p>
-    <a href="https://dotnet.microsoft.com/"><img src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10" /></a>
-    <a href="https://azure.microsoft.com/"><img src="https://img.shields.io/badge/Azure-Blob_Storage-0089D6?style=for-the-badge&logo=microsoftazure&logoColor=white" alt="Azure" /></a>
-    <a href="https://www.hangfire.io/"><img src="https://img.shields.io/badge/Hangfire-Job_Scheduler-8A2BE2?style=for-the-badge" alt="Hangfire" /></a>
-    <a href="https://jwt.io/"><img src="https://img.shields.io/badge/JWT-Authentication-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT" /></a>
-    <a href="https://www.microsoft.com/sql-server"><img src="https://img.shields.io/badge/SQL_Server-2022-CC292B?style=for-the-badge&logo=microsoftsqlserver&logoColor=white" alt="SQL Server" /></a>
-  </p>
+### Sanatçı Odaklı, Çok Katmanlı (Tiered) Üyelik ve SaaS Yönetim Mimarisine Sahip Dijital Müzik Platformu
 
-  <p>
-    <a href="#-neden-sonara">Neden Sonara?</a> •
-    <a href="#-sistem-mimarisi">Sistem Mimarisi</a> •
-    <a href="#-teknik-derinlik--özellikler">Teknik Derinlik</a> •
-    <a href="#-ekran-görüntüleri">Ekran Görüntüleri</a> •
-    <a href="#-teknoloji-yığını">Teknoloji Yığını</a> •
-    <a href="#-kurulum-ve-yapılandırma">Kurulum</a>
-  </p>
+<p>
+  <img src="https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10" />
+  <img src="https://img.shields.io/badge/Azure-Blob%20Storage-0089D6?style=for-the-badge&logo=microsoftazure&logoColor=white" alt="Azure Blob Storage" />
+  <img src="https://img.shields.io/badge/Hangfire-Background%20Jobs-8A2BE2?style=for-the-badge" alt="Hangfire" />
+  <img src="https://img.shields.io/badge/JWT-Authentication-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT Authentication" />
+  <img src="https://img.shields.io/badge/SQL%20Server-2022-CC292B?style=for-the-badge&logo=microsoftsqlserver&logoColor=white" alt="SQL Server" />
+</p>
 
-  <br />
+<p>
+  <a href="#-neden-sonara">Neden Sonara?</a> •
+  <a href="#-sistem-mimarisi">Sistem Mimarisi</a> •
+  <a href="#-teknik-derinlik--özellikler">Teknik Derinlik</a> •
+  <a href="#-ekran-görüntüleri">Ekran Görüntüleri</a> •
+  <a href="#-teknoloji-yığını">Teknoloji Yığını</a> •
+  <a href="#-kurulum-ve-yapılandırma">Kurulum</a>
+</p>
 
-  <img src="docs/screenshots/welcome.png" alt="Sonara Platform Showcase" width="100%" style="border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);" />
+<br>
+
+> **Modern SaaS mimarisi, gelişmiş güvenlik yaklaşımı ve bulut tabanlı medya yönetimi ile geliştirilen dijital müzik platformu.**
+
+<!-- Proje ekran görüntünüzü ekleyin -->
+<img src="docs/screenshots/welcome.png" alt="Sonara" width="100%"/>
 
 </div>
 
 ---
 
-## 💡 Neden Sonara?
+# 💡 Neden Sonara?
 
-Piyasadaki tipik "müzik uygulaması" demoları genellikle tek katmanda CRUD işlemleri yapan, oturum yönetimini yüzeysel ele alan ve gerçek dünya prodüksiyon ihtiyaçlarını göz ardı eden yapılardır. 
+Piyasadaki birçok müzik platformu örneği; yalnızca temel CRUD işlemlerini gerçekleştiren, basit kimlik doğrulaması kullanan ve gerçek üretim ortamlarında karşılaşılan ihtiyaçları göz ardı eden demo projelerden oluşmaktadır.
 
-**Sonara**, bir müzik yayın platformunun arkasındaki **gerçek SaaS operasyonlarını ve güvenlik zorluklarını** çözmek üzere sıfırdan tasarlandı:
+**Sonara**, yalnızca bir müzik dinleme uygulaması değil; **gerçek bir SaaS platformunun karşılaşacağı güvenlik, üyelik yönetimi, medya depolama ve oturum kontrolü problemlerini çözmek amacıyla** geliştirildi.
 
-- 🛡️ **Stateful Access Control:** Yalnızca JWT Claim'lerine güvenmek yerine, her hassas istekte veritabanı seviyesinde anlık yetki ve aktiflik doğrulaması.
-- 🔄 **Otonom Arka Plan Görevleri (Hangfire):** Süresi dolan üyeliklerin gece senkronizasyonuyla otomatik olarak `Free` statüsüne düşürülmesi.
-- 📱 **Eşzamanlı Oturum & Cihaz Limiti:** Kota dolduğunda FIFO (First-In-First-Out) mantığıyla en eski oturumu ve JWT Refresh Token'ı otomatik olarak düşüren oturum yönetimi.
-- ☁️ **Bulut Yerel Medya Yönetimi:** Şarkı ve görsellerin sunucu lokalinde (`wwwroot`) değil, üretim standartlarına uygun olarak **Azure Blob Storage** üzerinde CDN uyumlu tutulması.
-- 🎨 **SaaS Standartlarında Admin Paneli:** Şablon kullanılmadan, Vercel/Linear tasarım dilinden ilham alınarak sıfırdan yazılmış modüler yönetim arayüzü.
+## Öne Çıkan Özellikler
+
+### 🛡️ Stateful Access Control
+JWT içerisinde bulunan claim'lere güvenmek yerine, kritik isteklerde kullanıcının üyelik durumu, rolü ve aktifliği veritabanından yeniden doğrulanır. Böylece üyelik değişiklikleri anında sisteme yansır.
+
+### 🔄 Otonom Arka Plan Görevleri
+Hangfire ile çalışan zamanlanmış görevler sayesinde süresi dolan Premium üyelikler otomatik olarak **Free** üyeliğe düşürülür ve sistem manuel müdahaleye ihtiyaç duymaz.
+
+### 📱 Çoklu Cihaz ve Oturum Yönetimi
+Her üyelik paketi belirli sayıda aktif cihaz destekler. Limit aşıldığında sistem **FIFO (First-In First-Out)** mantığıyla en eski oturumu ve Refresh Token'ını otomatik olarak sonlandırır.
+
+### ☁️ Bulut Tabanlı Medya Yönetimi
+Şarkılar, albüm kapakları ve sanatçı görselleri uygulama sunucusunda değil, **Azure Blob Storage** üzerinde saklanır. Böylece yüksek ölçeklenebilirlik ve CDN uyumluluğu sağlanır.
+
+### 🎨 Modern Yönetim Paneli
+Hazır admin template'leri kullanılmadan, Vercel ve Linear tasarım anlayışından ilham alınarak tamamen özel geliştirilmiş yönetim paneli sunulmaktadır.
+
+### 🚀 Üretim Odaklı Mimari
+Katmanlı mimari, Repository Pattern, servis soyutlamaları ve API tabanlı iletişim sayesinde proje kolayca ölçeklenebilir ve sürdürülebilir yapıdadır.
 
 ---
 
