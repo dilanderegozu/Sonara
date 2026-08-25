@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sonara.CoreLayer;
 using Sonara.CoreLayer.Entities;
+using Sonara.DataAccessLayer.Repositories.Implementations;
 using Sonara.DataAccessLayer.Repositories.Interfaces;
 using Sonara.DtoLayer.Dtos.Admin;
+using Sonara.DtoLayer.Dtos.Song;
 using System.Diagnostics;
 using TagLib;
 
@@ -14,21 +17,141 @@ namespace Sonara.WebApi.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDashboardDal _dashboardDal;
         private readonly ISongDal _songDal;
         private readonly IBlobStorageService _blobStorageService;
         private readonly IConfiguration _configuration;
         private readonly IArtistDal _artistDal;
         private readonly IMoodDal _moodDal;
+        private readonly IMembershipPlanDal _membershipPlanDal;
 
-        public AdminController(IDashboardDal dashboardDal, ISongDal songDal, IBlobStorageService blobStorageService, IConfiguration configuration, IArtistDal artistDal, IMoodDal moodDal)
+        public AdminController(UserManager<ApplicationUser> userManager, IDashboardDal dashboardDal, ISongDal songDal, IBlobStorageService blobStorageService, IConfiguration configuration, IArtistDal artistDal, IMoodDal moodDal, IMembershipPlanDal membershipPlanDal)
         {
+            _userManager = userManager;
             _dashboardDal = dashboardDal;
             _songDal = songDal;
             _blobStorageService = blobStorageService;
             _configuration = configuration;
             _artistDal = artistDal;
             _moodDal = moodDal;
+            _membershipPlanDal = membershipPlanDal;
+        }
+
+
+        [HttpDelete("songs/{id}")]
+        public async Task<IActionResult> DeleteSong(int id)
+        {
+            var song = await _songDal.GetByIdAsync(id);
+            if (song is null) return NotFound();
+
+            _songDal.Delete(song);
+            await _songDal.SaveChangesAsync();
+            return Ok();
+        }
+        [HttpPut("songs/{id}")]
+        public async Task<IActionResult> UpdateSong(int id, [FromForm] string title, [FromForm] int artistId, [FromForm] IFormFile? coverFile)
+        {
+            var song = await _songDal.GetByIdAsync(id);
+            if (song is null) return NotFound();
+
+            song.Title = title;
+            song.ArtistId = artistId;
+
+            if (coverFile is not null)
+            {
+                var coversContainer = _configuration["AzureStorage:CoversContainer"]!;
+                using var stream = coverFile.OpenReadStream();
+                song.CoverImageUrl = await _blobStorageService.UploadFileAsync(stream, coverFile.FileName, coversContainer, coverFile.ContentType);
+            }
+
+            _songDal.Update(song);
+            await _songDal.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpDelete("artists/{id}")]
+        public async Task<IActionResult> DeleteArtist(int id)
+        {
+            var artist = await _artistDal.GetByIdAsync(id);
+            if (artist is null) return NotFound();
+
+            _artistDal.Delete(artist);
+            await _artistDal.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPut("artists/{id}")]
+        public async Task<IActionResult> UpdateArtist(int id, [FromForm] string name, [FromForm] string? bio, [FromForm] IFormFile? photoFile)
+        {
+            var artist = await _artistDal.GetByIdAsync(id);
+            if (artist is null) return NotFound();
+
+            artist.Name = name;
+            artist.Bio = bio ?? artist.Bio;
+
+            if (photoFile is not null)
+            {
+                var artistsContainer = _configuration["AzureStorage:ArtistsContainer"]!;
+                using var stream = photoFile.OpenReadStream();
+                artist.ImageUrl = await _blobStorageService.UploadFileAsync(stream, photoFile.FileName, artistsContainer, photoFile.ContentType);
+            }
+
+            _artistDal.Update(artist);
+            await _artistDal.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpDelete("moods/{id}")]
+        public async Task<IActionResult> DeleteMood(int id)
+        {
+            var mood = await _moodDal.GetByIdAsync(id);
+            if (mood is null) return NotFound();
+
+            _moodDal.Delete(mood);
+            await _moodDal.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPut("moods/{id}")]
+        public async Task<IActionResult> UpdateMood(int id, [FromBody] UpdateMoodDto dto)
+        {
+            var mood = await _moodDal.GetByIdAsync(id);
+            if (mood is null) return NotFound();
+
+            mood.Name = dto.Name;
+            mood.ColorHex = dto.ColorHex;
+
+            _moodDal.Update(mood);
+            await _moodDal.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats()
+        {
+            var songs = await _songDal.GetAllAsync();
+            var artists = await _artistDal.GetAllAsync();
+            var moods = await _moodDal.GetAllAsync();
+            var users = await _userManager.Users.ToListAsync();
+            var plans = await _membershipPlanDal.GetAllAsync();
+
+            var today = DateTime.UtcNow.Date;
+
+            var result = new
+            {
+                TotalSongs = songs.Count,
+                SongsToday = songs.Count(s => s.ReleaseDate.Date == today),
+                TotalArtists = artists.Count,
+                ArtistsToday = artists.Count(a => a.CreatedDate.Date == today),
+                TotalMoods = moods.Count,
+                TotalUsers = users.Count,
+                UsersToday = users.Count(u => u.RegisteredAt.Date == today),
+                TotalPlans = plans.Count,
+                TotalPlayCount = songs.Sum(s => s.PlayCount)
+            };
+
+            return Ok(result);
         }
 
         [HttpPost("moods")]
@@ -226,7 +349,7 @@ namespace Sonara.WebApi.Controllers
                 }
                 catch
                 {
-                    // bu şarkı atlanır, diğerlerine devam edilir
+                    
                 }
             }
 
@@ -234,5 +357,55 @@ namespace Sonara.WebApi.Controllers
 
             return Ok(new { Message = $"{updated} şarkının süresi güncellendi." });
         }
+        [HttpGet("plans/{id}")]
+        public async Task<IActionResult> GetPlanById(int id)
+        {
+            var plan = await _membershipPlanDal.GetByIdAsync(id);
+            if (plan is null) return NotFound();
+            return Ok(plan);
+        }
+
+        [HttpPost("plans")]
+        public async Task<IActionResult> CreatePlan([FromBody] PlanFormDto dto)
+        {
+            var plan = new MembershipPlan
+            {
+                Name = dto.Name,
+                Level = dto.Level,
+                Price = dto.Price,
+                MaxDeviceCount = dto.MaxDeviceCount,
+                HasAds = dto.HasAds,
+                HasOfflineDownload = dto.HasOfflineDownload,
+                HasHighQualityAudio = dto.HasHighQualityAudio,
+                DurationInDays = dto.DurationInDays
+            };
+
+            await _membershipPlanDal.AddAsync(plan);
+            await _membershipPlanDal.SaveChangesAsync();
+
+            return Ok(new { plan.Id });
+        }
+
+        [HttpPut("plans/{id}")]
+        public async Task<IActionResult> UpdatePlan(int id, [FromBody] PlanFormDto dto)
+        {
+            var plan = await _membershipPlanDal.GetByIdAsync(id);
+            if (plan is null) return NotFound();
+
+            plan.Name = dto.Name;
+            plan.Level = dto.Level;
+            plan.Price = dto.Price;
+            plan.MaxDeviceCount = dto.MaxDeviceCount;
+            plan.HasAds = dto.HasAds;
+            plan.HasOfflineDownload = dto.HasOfflineDownload;
+            plan.HasHighQualityAudio = dto.HasHighQualityAudio;
+            plan.DurationInDays = dto.DurationInDays;
+
+            _membershipPlanDal.Update(plan);
+            await _membershipPlanDal.SaveChangesAsync();
+
+            return Ok();
+        }
+
     }
 }

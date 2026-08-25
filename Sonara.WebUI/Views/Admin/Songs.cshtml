@@ -1,0 +1,729 @@
+﻿@model List<Sonara.WebUI.Services.AllSongDto>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonara Admin — Şarkılar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+            :root {
+                --sidebar: #111113;
+                --sidebar-hover: #1C1C1F;
+                --sidebar-line: rgba(255,255,255,0.08);
+                --bg: #FAFAFB;
+                --surface: #FFFFFF;
+                --border: #EBEBEF;
+                --border-soft: #F2F2F5;
+                --text: #0E0E10;
+                --text-dim: #68686F;
+                --text-faint: #9C9CA3;
+                --accent: #615FFF;
+                --accent-2: #8B7CFF;
+                --accent-soft: #EFEEFF;
+                --green: #0F9D58;
+                --green-soft: #E9F9EF;
+                --amber: #B45309;
+                --amber-soft: #FEF3E2;
+                --red: #DC2626;
+                --red-soft: #FEECEC;
+                --shadow-sm: 0 1px 2px rgba(14,14,16,0.04);
+                --shadow-md: 0 2px 4px rgba(14,14,16,0.04), 0 12px 28px -14px rgba(14,14,16,0.14);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: 'Inter',sans-serif;
+                min-height: 100vh;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .shell {
+                display: flex;
+                min-height: 100vh;
+            }
+
+            .sidebar {
+                width: 236px;
+                flex: none;
+                background: var(--sidebar);
+                color: #fff;
+                padding: 20px 14px;
+                display: flex;
+                flex-direction: column;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+            }
+
+            .sb-brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 6px 8px 22px;
+            }
+
+                .sb-brand .mark {
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 7px;
+                    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 800;
+                }
+
+                .sb-brand .name {
+                    font-weight: 700;
+                    font-size: 14.5px;
+                    letter-spacing: -0.01em;
+                }
+
+                    .sb-brand .name span {
+                        color: rgba(255,255,255,0.4);
+                        font-weight: 500;
+                    }
+
+            .sb-search {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: var(--sidebar-hover);
+                border: 1px solid var(--sidebar-line);
+                border-radius: 9px;
+                padding: 8px 10px;
+                font-size: 12.5px;
+                color: rgba(255,255,255,0.45);
+                margin-bottom: 20px;
+            }
+
+                .sb-search kbd {
+                    margin-left: auto;
+                    font-size: 10.5px;
+                    background: rgba(255,255,255,0.08);
+                    padding: 2px 6px;
+                    border-radius: 5px;
+                    font-family: inherit;
+                }
+
+            .sb-section {
+                font-size: 10.5px;
+                font-weight: 700;
+                letter-spacing: .07em;
+                text-transform: uppercase;
+                color: rgba(255,255,255,0.28);
+                padding: 14px 10px 8px;
+            }
+
+            .sb-nav {
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+            }
+
+                .sb-nav a {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 8px 10px;
+                    border-radius: 8px;
+                    font-size: 13.5px;
+                    font-weight: 500;
+                    color: rgba(255,255,255,0.62);
+                    transition: background .15s, color .15s;
+                }
+
+                    .sb-nav a i {
+                        font-size: 15px;
+                        width: 16px;
+                        text-align: center;
+                    }
+
+                    .sb-nav a:hover {
+                        background: var(--sidebar-hover);
+                        color: #fff;
+                    }
+
+                    .sb-nav a.active {
+                        background: rgba(97,95,255,0.18);
+                        color: #fff;
+                    }
+
+                        .sb-nav a.active i {
+                            color: var(--accent-2);
+                        }
+
+            .sb-foot {
+                margin-top: auto;
+                padding-top: 16px;
+                border-top: 1px solid var(--sidebar-line);
+            }
+
+            .sb-user {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px;
+                border-radius: 9px;
+            }
+
+                .sb-user .avatar {
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg,var(--accent),var(--accent-2));
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 700;
+                    flex: none;
+                }
+
+                .sb-user .who {
+                    font-size: 12.5px;
+                    font-weight: 600;
+                }
+
+                .sb-user .role {
+                    font-size: 11px;
+                    color: rgba(255,255,255,0.4);
+                }
+
+            .content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .topbar {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 32px;
+                height: 60px;
+                background: rgba(250,250,251,0.85);
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid var(--border);
+            }
+
+            .breadcrumb {
+                font-size: 13px;
+                color: var(--text-faint);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+                .breadcrumb b {
+                    color: var(--text);
+                    font-weight: 600;
+                }
+
+            .topbar-right {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .btn-ghost {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 13px;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+                font-size: 12.5px;
+                font-weight: 500;
+                color: var(--text-dim);
+                background: #fff;
+                transition: .15s;
+            }
+
+                .btn-ghost:hover {
+                    border-color: #D8D8DE;
+                    color: var(--text);
+                }
+
+            .btn-primary {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 14px;
+                border-radius: 8px;
+                border: none;
+                font-size: 12.5px;
+                font-weight: 600;
+                color: #fff;
+                background: var(--accent);
+                box-shadow: var(--shadow-sm);
+                transition: .15s;
+            }
+
+                .btn-primary:hover {
+                    background: #5250E8;
+                }
+
+            main {
+                max-width: 1220px;
+                margin: 0 auto;
+                padding: 36px 32px 100px;
+            }
+
+            .page-head {
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                margin-bottom: 24px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+                .page-head h1 {
+                    font-size: 26px;
+                    font-weight: 800;
+                    letter-spacing: -0.02em;
+                    margin: 0 0 4px;
+                }
+
+                .page-head p {
+                    font-size: 13.5px;
+                    color: var(--text-dim);
+                    margin: 0;
+                }
+
+            .toast {
+                background: var(--green-soft);
+                color: var(--green);
+                border: 1px solid rgba(15,157,88,0.25);
+                padding: 12px 18px;
+                border-radius: 12px;
+                font-size: 13px;
+                font-weight: 500;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .panel {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                box-shadow: var(--shadow-sm);
+                overflow: hidden;
+            }
+
+            .table-head-row {
+                display: grid;
+                grid-template-columns: 44px 1.6fr 1fr 100px 90px;
+                gap: 12px;
+                padding: 14px 22px;
+                border-bottom: 1px solid var(--border-soft);
+                font-size: 11.5px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .04em;
+                color: var(--text-faint);
+            }
+
+            .row {
+                display: grid;
+                grid-template-columns: 44px 1.6fr 1fr 100px 90px;
+                gap: 12px;
+                align-items: center;
+                padding: 12px 22px;
+                border-bottom: 1px solid var(--border-soft);
+                transition: background .15s;
+            }
+
+                .row:last-child {
+                    border-bottom: none;
+                }
+
+                .row:hover {
+                    background: var(--bg);
+                }
+
+                .row .idx {
+                    font-size: 12px;
+                    color: var(--text-faint);
+                    font-weight: 600;
+                }
+
+                .row .song-cell {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    min-width: 0;
+                }
+
+                .row .cover {
+                    width: 38px;
+                    height: 38px;
+                    border-radius: 8px;
+                    background-size: cover;
+                    background-position: center;
+                    background-color: var(--border-soft);
+                    flex: none;
+                }
+
+                .row .title {
+                    font-size: 13.5px;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .row .artist {
+                    font-size: 12.5px;
+                    color: var(--text-dim);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .row .plays {
+                    font-size: 12.5px;
+                    color: var(--text-dim);
+                    font-weight: 500;
+                }
+
+            .row-actions {
+                display: flex;
+                gap: 4px;
+                justify-content: flex-end;
+            }
+
+            .icon-btn {
+                width: 28px;
+                height: 28px;
+                border-radius: 7px;
+                border: 1px solid var(--border);
+                background: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--text-faint);
+                cursor: pointer;
+                transition: .15s;
+            }
+
+                .icon-btn:hover {
+                    border-color: var(--accent);
+                    color: var(--accent);
+                    background: var(--accent-soft);
+                }
+
+                .icon-btn.danger:hover {
+                    border-color: var(--red);
+                    color: var(--red);
+                    background: var(--red-soft);
+                }
+
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(14,14,16,0.4);
+                backdrop-filter: blur(2px);
+                z-index: 50;
+                align-items: center;
+                justify-content: center;
+            }
+
+                .modal-overlay.open {
+                    display: flex;
+                }
+
+            .modal-box {
+                background: #fff;
+                border-radius: 18px;
+                padding: 26px;
+                width: 100%;
+                max-width: 400px;
+                box-shadow: var(--shadow-md);
+            }
+
+                .modal-box h3 {
+                    font-size: 16px;
+                    font-weight: 700;
+                    margin: 0 0 18px;
+                }
+
+            .modal-field {
+                margin-bottom: 16px;
+            }
+
+                .modal-field label {
+                    display: block;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: var(--text-dim);
+                    margin-bottom: 6px;
+                }
+
+                .modal-field input, .modal-field select {
+                    width: 100%;
+                    padding: 10px 12px;
+                    border-radius: 9px;
+                    border: 1px solid var(--border);
+                    background: var(--bg);
+                    font-size: 13px;
+                    font-family: 'Inter',sans-serif;
+                    outline: none;
+                }
+
+                    .modal-field input:focus, .modal-field select:focus {
+                        border-color: var(--accent);
+                        background: #fff;
+                    }
+
+            .modal-preview {
+                width: 100%;
+                height: 90px;
+                border-radius: 10px;
+                background-size: cover;
+                background-position: center;
+                background-color: var(--border-soft);
+                margin-bottom: 8px;
+                border: 1px solid var(--border);
+            }
+
+            .modal-field input[type="file"] {
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+                margin-top: 22px;
+            }
+
+            .btn-cancel {
+                padding: 9px 16px;
+                border-radius: 9px;
+                border: 1px solid var(--border);
+                background: #fff;
+                font-size: 12.5px;
+                font-weight: 600;
+                color: var(--text-dim);
+                cursor: pointer;
+            }
+
+            .btn-save {
+                padding: 9px 16px;
+                border-radius: 9px;
+                border: none;
+                background: var(--accent);
+                color: #fff;
+                font-size: 12.5px;
+                font-weight: 600;
+                cursor: pointer;
+            }
+
+            .empty-state {
+                padding: 60px 20px;
+                text-align: center;
+                color: var(--text-faint);
+                font-size: 13.5px;
+            }
+
+            @@media (max-width:820px) {
+                .sidebar {
+                    display: none;
+                }
+
+                .table-head-row, .row {
+                    grid-template-columns: 40px 1fr 70px 70px;
+                }
+
+                    .row .artist {
+                        display: none;
+                    }
+            }
+    </style>
+</head>
+<body>
+    @Html.AntiForgeryToken()
+
+    <div class="shell">
+        <aside class="sidebar">
+            <div class="sb-brand"><span class="mark">S</span><span class="name">Sonara <span>Admin</span></span></div>
+            <div class="sb-search"><i class="bi bi-search"></i>Ara<kbd>⌘K</kbd></div>
+
+            <p class="sb-section">Genel</p>
+            <div class="sb-nav"><a href="/Admin/Index"><i class="bi bi-grid-1x2-fill"></i>Genel bakış</a></div>
+
+            <p class="sb-section">Katalog</p>
+            <div class="sb-nav">
+                <a href="/Admin/Songs" class="active"><i class="bi bi-music-note-beamed"></i>Şarkılar</a>
+                <a href="/Admin/Artists"><i class="bi bi-person-badge"></i>Sanatçılar</a>
+                <a href="/Admin/Moods"><i class="bi bi-palette"></i>Ruh halleri</a>
+            </div>
+
+            <p class="sb-section">Sistem</p>
+            <div class="sb-nav">
+                <a href="/Packages/Index"><i class="bi bi-layers"></i>Paketler</a>
+                <a href="/Home/Index"><i class="bi bi-box-arrow-up-right"></i>Siteye dön</a>
+            </div>
+
+            <div class="sb-foot">
+                <div class="sb-user"><span class="avatar">D</span><div><div class="who">Dilan</div><div class="role">Admin</div></div></div>
+            </div>
+        </aside>
+
+        <div class="content">
+            <div class="topbar">
+                <div class="breadcrumb">Admin <i class="bi bi-chevron-right" style="font-size:10px;"></i> <b>Şarkılar</b></div>
+                <div class="topbar-right">
+                    <a href="/Admin/CreateSong" class="btn-primary"><i class="bi bi-plus-lg"></i>Yeni şarkı</a>
+                </div>
+            </div>
+
+            <main>
+                <div class="page-head">
+                    <div>
+                        <h1>Şarkılar</h1>
+                        <p>@Model.Count parça · kataloğun tamamı</p>
+                    </div>
+                </div>
+
+                @if (TempData["Message"] != null)
+                {
+                    <div class="toast"><i class="bi bi-check-circle-fill"></i>@TempData["Message"]</div>
+                }
+
+                <div class="panel">
+                    @if (Model.Any())
+                    {
+                        <div class="table-head-row"><span>#</span><span>Şarkı</span><span>Sanatçı</span><span>Çalınma</span><span></span></div>
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            var song = Model[i];
+                            <div class="row">
+                                <span class="idx">@(i + 1)</span>
+                                <div class="song-cell">
+                                    <div class="cover" style="@(string.IsNullOrEmpty(song.CoverImageUrl) ? "" : $"background-image:url('{song.CoverImageUrl}')")"></div>
+                                    <span class="title">@song.Title</span>
+                                </div>
+                                <span class="artist">@song.ArtistName</span>
+                                <span class="plays">@song.PlayCount.ToString("N0")</span>
+                                <div class="row-actions">
+                                    <button class="icon-btn" title="Düzenle" onclick="openEditModal(@song.SongId, '@Html.Raw(song.Title.Replace("'", "\\'"))', @song.ArtistId, '@Html.Raw(song.CoverImageUrl ?? "")')"><i class="bi bi-pencil"></i></button>
+                                    <button class="icon-btn danger" title="Sil" onclick="confirmDelete(@song.SongId, '@Html.Raw(song.Title.Replace("'", "\\'"))')"><i class="bi bi-trash3"></i></button>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">Henüz şarkı eklenmemiş.</div>
+                    }
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-box">
+            <h3>Şarkıyı düzenle</h3>
+            <div class="modal-field">
+                <label>Başlık</label>
+                <input type="text" id="editTitle" />
+            </div>
+            <div class="modal-field">
+                <label>Sanatçı</label>
+                <select id="editArtistId">
+                    @foreach (var artist in ViewBag.Artists as List<Sonara.WebUI.Services.PopularArtistDto>)
+                    {
+                        <option value="@artist.ArtistId">@artist.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="modal-field">
+                <label>Kapak görseli <span style="font-weight:400; color:var(--text-faint);">(değiştirmek istemiyorsan boş bırak)</span></label>
+                <div class="modal-preview" id="editCoverPreview"></div>
+                <input type="file" id="editCoverFile" accept="image/*" />
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeEditModal()">Vazgeç</button>
+                <button class="btn-save" onclick="saveEdit()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            let currentSongId = null;
+
+            function openEditModal(id, title, artistId, coverUrl) {
+                currentSongId = id;
+                document.getElementById('editTitle').value = title;
+                document.getElementById('editArtistId').value = artistId;
+                document.getElementById('editCoverFile').value = '';
+                const preview = document.getElementById('editCoverPreview');
+                preview.style.backgroundImage = coverUrl ? `url('${coverUrl}')` : '';
+                document.getElementById('editModal').classList.add('open');
+            }
+            function closeEditModal() {
+                document.getElementById('editModal').classList.remove('open');
+            }
+            async function saveEdit() {
+                const title = document.getElementById('editTitle').value;
+                const artistId = document.getElementById('editArtistId').value;
+                const coverFile = document.getElementById('editCoverFile').files[0];
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const form = new FormData();
+                form.append('id', currentSongId);
+                form.append('title', title);
+                form.append('artistId', artistId);
+                if (coverFile) form.append('coverFile', coverFile);
+                if (token) form.append('__RequestVerificationToken', token);
+
+                const res = await fetch('/Admin/UpdateSongAjax', { method: 'POST', body: form });
+                if (res.ok) location.reload();
+                else alert('Güncelleme başarısız oldu.');
+            }
+            async function confirmDelete(id, title) {
+                if (!confirm(`"${title}" şarkısını silmek istediğine emin misin?`)) return;
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const form = new URLSearchParams();
+                form.append('id', id);
+                if (token) form.append('__RequestVerificationToken', token);
+
+                const res = await fetch('/Admin/DeleteSongAjax', { method: 'POST', body: form });
+                if (res.ok) location.reload();
+                else alert('Silme başarısız oldu.');
+            }
+    </script>
+
+</body>
+</html>

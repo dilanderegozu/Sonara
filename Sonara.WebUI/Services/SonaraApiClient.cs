@@ -167,7 +167,62 @@ namespace Sonara.WebUI.Services
 
             return (response.IsSuccessStatusCode, response.IsSuccessStatusCode ? null : body);
         }
+        public async Task<bool> CreateSongAdminAsync(string jwtToken, string title, int artistId, List<int> allowedPlanIds, Stream audioStream, string audioFileName, string audioContentType, Stream? coverStream, string? coverFileName, string? coverContentType)
+        {
+            using var content = new MultipartFormDataContent();
+            content.Add(new StringContent(title), "Title");
+            content.Add(new StringContent(artistId.ToString()), "ArtistId");
+            foreach (var planId in allowedPlanIds)
+                content.Add(new StringContent(planId.ToString()), "AllowedPlanIds");
 
+            var audioContent = new StreamContent(audioStream);
+            audioContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(audioContentType);
+            content.Add(audioContent, "AudioFile", audioFileName);
+
+            if (coverStream is not null)
+            {
+                var coverContent = new StreamContent(coverStream);
+                coverContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(coverContentType ?? "image/jpeg");
+                content.Add(coverContent, "CoverFile", coverFileName ?? "cover.jpg");
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/admin/songs") { Content = content };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+            var response = await _httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+        public async Task<bool> CreateArtistAdminAsync(string jwtToken, string name, string? bio, Stream? photoStream, string? photoFileName, string? photoContentType)
+        {
+            using var content = new MultipartFormDataContent();
+            content.Add(new StringContent(name), "Name");
+            if (!string.IsNullOrEmpty(bio)) content.Add(new StringContent(bio), "Bio");
+
+            if (photoStream is not null)
+            {
+                var photoContent = new StreamContent(photoStream);
+                photoContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(photoContentType ?? "image/jpeg");
+                content.Add(photoContent, "PhotoFile", photoFileName ?? "photo.jpg");
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/admin/artists") { Content = content };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+            var response = await _httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> CreateMoodAdminAsync(string jwtToken, string name, string colorHex)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/admin/moods")
+            {
+                Content = JsonContent.Create(new { Name = name, ColorHex = colorHex })
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+            var response = await _httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
         public async Task<bool> AddSongToPlaylistAsync(string jwtToken, int playlistId, int songId)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, $"api/playlist/{playlistId}/songs")
@@ -286,6 +341,131 @@ namespace Sonara.WebUI.Services
 
             return await response.Content.ReadFromJsonAsync<List<PopularArtistDto>>();
         }
+        public async Task<AdminStatsDto?> GetAdminStatsAsync(string jwtToken)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/admin/stats");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) return null;
+
+            return await response.Content.ReadFromJsonAsync<AdminStatsDto>();
+        }
+        public async Task<List<PlanDto>?> GetAllPlansAdminAsync(string jwtToken)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/membership/plans");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadFromJsonAsync<List<PlanDto>>();
+        }
+
+        public async Task<PlanDto?> GetPlanByIdAsync(string jwtToken, int id)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"api/admin/plans/{id}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadFromJsonAsync<PlanDto>();
+        }
+
+        public async Task<bool> CreatePlanAsync(string jwtToken, PlanFormRequest form)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/admin/plans") { Content = JsonContent.Create(form) };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> UpdatePlanAsync(string jwtToken, int id, PlanFormRequest form)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, $"api/admin/plans/{id}") { Content = JsonContent.Create(form) };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+        public async Task<bool> DeleteSongAsync(string jwtToken, int id) => await AdminDelete(jwtToken, $"api/admin/songs/{id}");
+        public async Task<bool> DeleteArtistAsync(string jwtToken, int id) => await AdminDelete(jwtToken, $"api/admin/artists/{id}");
+        public async Task<bool> DeleteMoodAsync(string jwtToken, int id) => await AdminDelete(jwtToken, $"api/admin/moods/{id}");
+
+        public async Task<bool> UpdateSongAsync(string jwtToken, int id, string title, int artistId, Stream? coverStream, string? coverFileName, string? coverContentType)
+        {
+            using var content = new MultipartFormDataContent();
+            content.Add(new StringContent(title), "title");
+            content.Add(new StringContent(artistId.ToString()), "artistId");
+
+            if (coverStream is not null)
+            {
+                var coverContent = new StreamContent(coverStream);
+                coverContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(coverContentType ?? "image/jpeg");
+                content.Add(coverContent, "coverFile", coverFileName ?? "cover.jpg");
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Put, $"api/admin/songs/{id}") { Content = content };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> UpdateArtistAsync(string jwtToken, int id, string name, string? bio, Stream? photoStream, string? photoFileName, string? photoContentType)
+        {
+            using var content = new MultipartFormDataContent();
+            content.Add(new StringContent(name), "name");
+            if (!string.IsNullOrEmpty(bio)) content.Add(new StringContent(bio), "bio");
+
+            if (photoStream is not null)
+            {
+                var photoContent = new StreamContent(photoStream);
+                photoContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(photoContentType ?? "image/jpeg");
+                content.Add(photoContent, "photoFile", photoFileName ?? "photo.jpg");
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Put, $"api/admin/artists/{id}") { Content = content };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> UpdateMoodAsync(string jwtToken, int id, string name, string colorHex)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, $"api/admin/moods/{id}") { Content = JsonContent.Create(new { Name = name, ColorHex = colorHex }) };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
+        private async Task<bool> AdminDelete(string jwtToken, string path)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Delete, path);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
+
+    }
+    public class PlanFormRequest
+    {
+        public string Name { get; set; }
+        public int Level { get; set; }
+        public decimal Price { get; set; }
+        public int MaxDeviceCount { get; set; }
+        public bool HasAds { get; set; }
+        public bool HasOfflineDownload { get; set; }
+        public bool HasHighQualityAudio { get; set; }
+        public int DurationInDays { get; set; }
+    }
+    public class AdminStatsDto
+    {
+        public int TotalSongs { get; set; }
+        public int SongsToday { get; set; }
+        public int TotalArtists { get; set; }
+        public int ArtistsToday { get; set; }
+        public int TotalMoods { get; set; }
+        public int TotalUsers { get; set; }
+        public int UsersToday { get; set; }
+        public int TotalPlans { get; set; }
+        public int TotalPlayCount { get; set; }
     }
     public class MoodDetailDto
     {

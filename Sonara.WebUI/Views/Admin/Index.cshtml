@@ -1,10 +1,861 @@
-﻿@{
-    ViewData["Title"] = "Admin Dashboard";
+﻿@model Sonara.WebUI.Services.AdminStatsDto
+@{
+    Layout = null;
+    var catalogTotal = Model.TotalSongs + Model.TotalArtists + Model.TotalMoods;
+    if (catalogTotal == 0) catalogTotal = 1;
+    int SharePct(int v) => (int)Math.Round((double)v / catalogTotal * 100);
 }
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonara Admin — Genel Bakış</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+            :root {
+                --sidebar: #111113;
+                --sidebar-hover: #1C1C1F;
+                --sidebar-line: rgba(255,255,255,0.08);
+                --bg: #FAFAFB;
+                --surface: #FFFFFF;
+                --border: #EBEBEF;
+                --border-soft: #F2F2F5;
+                --text: #0E0E10;
+                --text-dim: #68686F;
+                --text-faint: #9C9CA3;
+                --accent: #615FFF;
+                --accent-2: #8B7CFF;
+                --accent-soft: #EFEEFF;
+                --green: #0F9D58;
+                --green-soft: #E9F9EF;
+                --amber: #B45309;
+                --amber-soft: #FEF3E2;
+                --pink: #DB2777;
+                --pink-soft: #FDF0F6;
+                --shadow-sm: 0 1px 2px rgba(14,14,16,0.04);
+                --shadow-md: 0 2px 4px rgba(14,14,16,0.04), 0 12px 28px -14px rgba(14,14,16,0.14);
+                --shadow-lg: 0 4px 10px rgba(14,14,16,0.06), 0 24px 48px -20px rgba(14,14,16,0.20);
+            }
 
-<h2>Admin Dashboard</h2>
-<p>Buraya istatistikleri (WebApi'nin dashboard-summary endpoint'inden) getireceğiz.</p>
+            * {
+                box-sizing: border-box;
+            }
 
-<form asp-action="Logout" asp-controller="Account" method="post">
-    <button type="submit">Çıkış Yap</button>
-</form>
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: 'Inter',sans-serif;
+                min-height: 100vh;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            ::selection {
+                background: var(--accent-soft);
+                color: var(--accent);
+            }
+
+            .shell {
+                display: flex;
+                min-height: 100vh;
+            }
+
+            .sidebar {
+                width: 236px;
+                flex: none;
+                background: var(--sidebar);
+                color: #fff;
+                padding: 20px 14px;
+                display: flex;
+                flex-direction: column;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+            }
+
+            .sb-brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 6px 8px 22px;
+            }
+
+                .sb-brand .mark {
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 7px;
+                    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 800;
+                }
+
+                .sb-brand .name {
+                    font-weight: 700;
+                    font-size: 14.5px;
+                    letter-spacing: -0.01em;
+                }
+
+                    .sb-brand .name span {
+                        color: rgba(255,255,255,0.4);
+                        font-weight: 500;
+                    }
+
+            .sb-search {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: var(--sidebar-hover);
+                border: 1px solid var(--sidebar-line);
+                border-radius: 9px;
+                padding: 8px 10px;
+                font-size: 12.5px;
+                color: rgba(255,255,255,0.45);
+                margin-bottom: 20px;
+            }
+
+                .sb-search kbd {
+                    margin-left: auto;
+                    font-size: 10.5px;
+                    background: rgba(255,255,255,0.08);
+                    padding: 2px 6px;
+                    border-radius: 5px;
+                    font-family: inherit;
+                }
+
+            .sb-section {
+                font-size: 10.5px;
+                font-weight: 700;
+                letter-spacing: .07em;
+                text-transform: uppercase;
+                color: rgba(255,255,255,0.28);
+                padding: 14px 10px 8px;
+            }
+
+            .sb-nav {
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+            }
+
+                .sb-nav a {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 8px 10px;
+                    border-radius: 8px;
+                    font-size: 13.5px;
+                    font-weight: 500;
+                    color: rgba(255,255,255,0.62);
+                    transition: background .15s, color .15s;
+                }
+
+                    .sb-nav a i {
+                        font-size: 15px;
+                        width: 16px;
+                        text-align: center;
+                    }
+
+                    .sb-nav a:hover {
+                        background: var(--sidebar-hover);
+                        color: #fff;
+                    }
+
+                    .sb-nav a.active {
+                        background: rgba(97,95,255,0.18);
+                        color: #fff;
+                    }
+
+                        .sb-nav a.active i {
+                            color: var(--accent-2);
+                        }
+
+            .sb-foot {
+                margin-top: auto;
+                padding-top: 16px;
+                border-top: 1px solid var(--sidebar-line);
+            }
+
+            .sb-user {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px;
+                border-radius: 9px;
+                transition: background .15s;
+            }
+
+                .sb-user:hover {
+                    background: var(--sidebar-hover);
+                }
+
+                .sb-user .avatar {
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg,var(--accent),var(--accent-2));
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 700;
+                    flex: none;
+                }
+
+                .sb-user .who {
+                    font-size: 12.5px;
+                    font-weight: 600;
+                }
+
+                .sb-user .role {
+                    font-size: 11px;
+                    color: rgba(255,255,255,0.4);
+                }
+
+            .content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .topbar {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 32px;
+                height: 60px;
+                background: rgba(250,250,251,0.85);
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid var(--border);
+            }
+
+            .breadcrumb {
+                font-size: 13px;
+                color: var(--text-faint);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+                .breadcrumb b {
+                    color: var(--text);
+                    font-weight: 600;
+                }
+
+            .topbar-right {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .btn-ghost {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 13px;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+                font-size: 12.5px;
+                font-weight: 500;
+                color: var(--text-dim);
+                background: #fff;
+                transition: .15s;
+            }
+
+                .btn-ghost:hover {
+                    border-color: #D8D8DE;
+                    color: var(--text);
+                }
+
+            .btn-primary {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 14px;
+                border-radius: 8px;
+                border: none;
+                font-size: 12.5px;
+                font-weight: 600;
+                color: #fff;
+                background: var(--accent);
+                box-shadow: var(--shadow-sm);
+                transition: .15s;
+            }
+
+                .btn-primary:hover {
+                    background: #5250E8;
+                }
+
+            main {
+                max-width: 1220px;
+                margin: 0 auto;
+                padding: 36px 32px 100px;
+            }
+
+            .page-head {
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                margin-bottom: 28px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+                .page-head h1 {
+                    font-size: 26px;
+                    font-weight: 800;
+                    letter-spacing: -0.02em;
+                    margin: 0 0 4px;
+                }
+
+                .page-head p {
+                    font-size: 13.5px;
+                    color: var(--text-dim);
+                    margin: 0;
+                }
+
+            .hero-row {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+                margin-bottom: 16px;
+            }
+
+            @@media (max-width:920px) {
+                .hero-row {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .hero-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                padding: 22px;
+                box-shadow: var(--shadow-sm);
+                transition: box-shadow .2s, transform .2s, border-color .2s;
+                position: relative;
+                overflow: hidden;
+            }
+
+                .hero-card:hover {
+                    box-shadow: var(--shadow-md);
+                    transform: translateY(-2px);
+                    border-color: #DDDDE4;
+                }
+
+                .hero-card .top-row {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 16px;
+                }
+
+                .hero-card .icon {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 9px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 15px;
+                }
+
+            .icon.i-violet {
+                background: var(--accent-soft);
+                color: var(--accent);
+            }
+
+            .icon.i-green {
+                background: var(--green-soft);
+                color: var(--green);
+            }
+
+            .icon.i-amber {
+                background: var(--amber-soft);
+                color: var(--amber);
+            }
+
+            .hero-card .delta {
+                font-size: 11.5px;
+                font-weight: 700;
+                padding: 3px 8px;
+                border-radius: 6px;
+            }
+
+            .delta.up {
+                background: var(--green-soft);
+                color: var(--green);
+            }
+
+            .delta.flat {
+                background: var(--border-soft);
+                color: var(--text-faint);
+            }
+
+            .hero-card .label {
+                font-size: 12.5px;
+                font-weight: 600;
+                color: var(--text-faint);
+                margin-bottom: 6px;
+            }
+
+            .hero-card .value {
+                font-size: 32px;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                line-height: 1;
+                margin-bottom: 14px;
+            }
+
+            .spark {
+                width: 100%;
+                height: 34px;
+                display: block;
+            }
+
+            .stat-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+                margin-bottom: 32px;
+            }
+
+            @@media (max-width:680px) {
+                .stat-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .stat-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                padding: 18px 20px;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                box-shadow: var(--shadow-sm);
+                transition: box-shadow .2s, transform .2s;
+            }
+
+                .stat-card:hover {
+                    box-shadow: var(--shadow-md);
+                    transform: translateY(-1px);
+                }
+
+                .stat-card .icon {
+                    width: 34px;
+                    height: 34px;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 15px;
+                    flex: none;
+                }
+
+                .stat-card .txt .value {
+                    font-size: 19px;
+                    font-weight: 800;
+                    letter-spacing: -0.01em;
+                    line-height: 1.1;
+                }
+
+                .stat-card .txt .label {
+                    font-size: 12px;
+                    color: var(--text-faint);
+                    font-weight: 500;
+                }
+
+            .split {
+                display: grid;
+                grid-template-columns: 1.15fr 0.85fr;
+                gap: 20px;
+                align-items: start;
+            }
+
+            @@media (max-width:920px) {
+                .split {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .panel {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                box-shadow: var(--shadow-sm);
+                overflow: hidden;
+            }
+
+            .panel-head {
+                padding: 18px 22px;
+                border-bottom: 1px solid var(--border-soft);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+                .panel-head h3 {
+                    font-size: 14.5px;
+                    font-weight: 700;
+                    margin: 0;
+                }
+
+                .panel-head .hint {
+                    font-size: 11.5px;
+                    color: var(--text-faint);
+                }
+
+            .cmd-list {
+                padding: 8px;
+            }
+
+            .cmd-row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 11px 12px;
+                border-radius: 10px;
+                transition: background .15s;
+            }
+
+                .cmd-row:hover {
+                    background: var(--bg);
+                }
+
+                .cmd-row .icon {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 9px;
+                    background: var(--accent-soft);
+                    color: var(--accent);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                    flex: none;
+                }
+
+                .cmd-row .txt {
+                    flex: 1;
+                    min-width: 0;
+                }
+
+                .cmd-row .title {
+                    font-size: 13.5px;
+                    font-weight: 600;
+                }
+
+                .cmd-row .desc {
+                    font-size: 12px;
+                    color: var(--text-faint);
+                }
+
+                .cmd-row kbd {
+                    font-size: 11px;
+                    color: var(--text-faint);
+                    background: var(--bg);
+                    border: 1px solid var(--border);
+                    padding: 3px 7px;
+                    border-radius: 6px;
+                    font-family: inherit;
+                }
+
+            .compo-panel {
+                padding: 22px;
+            }
+
+            .compo-bar {
+                height: 10px;
+                border-radius: 999px;
+                overflow: hidden;
+                display: flex;
+                margin-bottom: 18px;
+                background: var(--border-soft);
+            }
+
+            .compo-seg {
+                height: 100%;
+            }
+
+            .compo-legend {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .compo-legend-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 13px;
+            }
+
+            .compo-dot {
+                width: 9px;
+                height: 9px;
+                border-radius: 3px;
+                flex: none;
+            }
+
+            .compo-legend-row .name {
+                flex: 1;
+                font-weight: 500;
+                color: var(--text-dim);
+            }
+
+            .compo-legend-row .num {
+                font-weight: 700;
+            }
+
+            .plan-strip {
+                display: flex;
+                gap: 8px;
+                padding: 16px 22px;
+                border-top: 1px solid var(--border-soft);
+                flex-wrap: wrap;
+            }
+
+            .plan-chip {
+                font-size: 11.5px;
+                font-weight: 600;
+                padding: 5px 10px;
+                border-radius: 999px;
+                background: var(--bg);
+                color: var(--text-dim);
+                border: 1px solid var(--border);
+            }
+
+            .hero-card, .stat-card, .panel {
+                opacity: 0;
+                transform: translateY(8px);
+                animation: rise .45s cubic-bezier(.2,.7,.2,1) forwards;
+            }
+
+            .hero-row .hero-card:nth-child(1) {
+                animation-delay: .02s;
+            }
+
+            .hero-row .hero-card:nth-child(2) {
+                animation-delay: .06s;
+            }
+
+            .hero-row .hero-card:nth-child(3) {
+                animation-delay: .10s;
+            }
+
+            .stat-grid .stat-card:nth-child(1) {
+                animation-delay: .05s;
+            }
+
+            .stat-grid .stat-card:nth-child(2) {
+                animation-delay: .08s;
+            }
+
+            .split .panel:nth-child(1) {
+                animation-delay: .10s;
+            }
+
+            .split .panel:nth-child(2) {
+                animation-delay: .14s;
+            }
+
+            @@keyframes rise {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @@media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: .001ms !important;
+                }
+            }
+
+            @@media (max-width:820px) {
+                .sidebar {
+                    display: none;
+                }
+            }
+    </style>
+</head>
+<body>
+
+    <div class="shell">
+        <aside class="sidebar">
+            <div class="sb-brand">
+                <span class="mark">S</span>
+                <span class="name">Sonara <span>Admin</span></span>
+            </div>
+            <div class="sb-search"><i class="bi bi-search"></i>Ara<kbd>⌘K</kbd></div>
+
+            <p class="sb-section">Genel</p>
+            <div class="sb-nav">
+                <a href="/Admin/Index" class="active"><i class="bi bi-grid-1x2-fill"></i>Genel bakış</a>
+            </div>
+
+            <p class="sb-section">Katalog</p>
+            <div class="sb-nav">
+                <a href="/Admin/Songs"><i class="bi bi-music-note-beamed"></i>Şarkılar</a>
+                <a href="/Admin/Artists"><i class="bi bi-person-badge"></i>Sanatçılar</a>
+                <a href="/Admin/Moods"><i class="bi bi-palette"></i>Ruh halleri</a>
+            </div>
+
+            <p class="sb-section">Sistem</p>
+            <div class="sb-nav">
+                <a href="/Admin/Plans"><i class="bi bi-layers"></i>Paketler</a>
+                <a href="/Home/Index"><i class="bi bi-box-arrow-up-right"></i>Siteye dön</a>
+            </div>
+
+            <div class="sb-foot">
+                <div class="sb-user">
+                    <span class="avatar">D</span>
+                    <div>
+                        <div class="who">Dilan</div>
+                        <div class="role">Admin</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="content">
+            <div class="topbar">
+                <div class="breadcrumb">Admin <i class="bi bi-chevron-right" style="font-size:10px;"></i> <b>Genel bakış</b></div>
+                <div class="topbar-right">
+                    <button class="btn-ghost"><i class="bi bi-arrow-clockwise"></i>Yenile</button>
+                    <a href="/Admin/CreateSong" class="btn-primary"><i class="bi bi-plus-lg"></i>Yeni şarkı</a>
+                </div>
+            </div>
+
+            <main>
+                <div class="page-head">
+                    <div>
+                        <h1>Genel bakış</h1>
+                        <p>Kataloğun ve dinleyici tabanının anlık durumu.</p>
+                    </div>
+                </div>
+
+                <div class="hero-row">
+                    <div class="hero-card" onclick="location.href='/Admin/Songs'">
+                        <div class="top-row">
+                            <div class="icon i-violet"><i class="bi bi-music-note-beamed"></i></div>
+                            <span class="delta @(Model.SongsToday > 0 ? "up" : "flat")">@(Model.SongsToday > 0 ? $"+{Model.SongsToday}" : "—")</span>
+                        </div>
+                        <div class="label">Toplam şarkı</div>
+                        <div class="value">@Model.TotalSongs</div>
+                        <svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none">
+                            <polyline points="0,26 15,22 30,24 45,16 60,19 75,10 90,13 105,6 120,4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+
+                    <div class="hero-card" onclick="location.href='/Admin/Artists'">
+                        <div class="top-row">
+                            <div class="icon i-green"><i class="bi bi-person-badge"></i></div>
+                            <span class="delta @(Model.ArtistsToday > 0 ? "up" : "flat")">@(Model.ArtistsToday > 0 ? $"+{Model.ArtistsToday}" : "—")</span>
+                        </div>
+                        <div class="label">Toplam sanatçı</div>
+                        <div class="value">@Model.TotalArtists</div>
+                        <svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none">
+                            <polyline points="0,18 15,20 30,14 45,17 60,12 75,15 90,9 105,11 120,7" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+
+                    <div class="hero-card">
+                        <div class="top-row">
+                            <div class="icon i-amber"><i class="bi bi-headphones"></i></div>
+                            <span class="delta up">Aktif</span>
+                        </div>
+                        <div class="label">Toplam dinleme</div>
+                        <div class="value">@Model.TotalPlayCount.ToString("N0")</div>
+                        <svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none">
+                            <polyline points="0,28 15,24 30,26 45,18 60,20 75,12 90,15 105,8 120,10" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="stat-grid">
+                    <div class="stat-card" onclick="location.href='/Admin/Moods'">
+                        <div class="icon i-amber"><i class="bi bi-palette"></i></div>
+                        <div class="txt"><div class="value">@Model.TotalMoods</div><div class="label">Ruh hali koleksiyonu</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon i-violet"><i class="bi bi-people"></i></div>
+                        <div class="txt">
+                            <div class="value">@Model.TotalUsers</div>
+                            <div class="label">@(Model.UsersToday > 0 ? $"Kullanıcı · +{Model.UsersToday} bugün" : "Kayıtlı kullanıcı")</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="split">
+                    <div class="panel">
+                        <div class="panel-head"><h3>Hızlı işlemler</h3><span class="hint">4 kısayol</span></div>
+                        <div class="cmd-list">
+                            <a href="/Admin/CreateSong" class="cmd-row">
+                                <span class="icon"><i class="bi bi-plus-lg"></i></span>
+                                <span class="txt"><div class="title">Şarkı ekle</div><div class="desc">Kataloğa yeni şarkı ve kapak yükle</div></span>
+                                <kbd>N S</kbd>
+                            </a>
+                            <a href="/Admin/CreateArtist" class="cmd-row">
+                                <span class="icon"><i class="bi bi-person-plus"></i></span>
+                                <span class="txt"><div class="title">Sanatçı ekle</div><div class="desc">Yeni sanatçı profili oluştur</div></span>
+                                <kbd>N A</kbd>
+                            </a>
+                            <a href="/Admin/CreateMood" class="cmd-row">
+                                <span class="icon"><i class="bi bi-stars"></i></span>
+                                <span class="txt"><div class="title">Ruh hali ekle</div><div class="desc">Yeni koleksiyon kategorisi tanımla</div></span>
+                                <kbd>N M</kbd>
+                            </a>
+                            <a href="/Admin/Songs" class="cmd-row">
+                                <span class="icon"><i class="bi bi-grid-3x3-gap"></i></span>
+                                <span class="txt"><div class="title">Kataloğu gör</div><div class="desc">Tüm şarkıları listele ve yönet</div></span>
+                                <kbd>G S</kbd>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-head"><h3>Katalog dağılımı</h3></div>
+                        <div class="compo-panel">
+                            <div class="compo-bar">
+                                <div class="compo-seg" style="width:@(SharePct(Model.TotalSongs))%; background:var(--accent);"></div>
+                                <div class="compo-seg" style="width:@(SharePct(Model.TotalArtists))%; background:var(--green);"></div>
+                                <div class="compo-seg" style="width:@(SharePct(Model.TotalMoods))%; background:var(--amber);"></div>
+                            </div>
+                            <div class="compo-legend">
+                                <div class="compo-legend-row"><span class="compo-dot" style="background:var(--accent);"></span><span class="name">Şarkılar</span><span class="num">@Model.TotalSongs</span></div>
+                                <div class="compo-legend-row"><span class="compo-dot" style="background:var(--green);"></span><span class="name">Sanatçılar</span><span class="num">@Model.TotalArtists</span></div>
+                                <div class="compo-legend-row"><span class="compo-dot" style="background:var(--amber);"></span><span class="name">Ruh halleri</span><span class="num">@Model.TotalMoods</span></div>
+                            </div>
+                        </div>
+                        <div class="plan-strip">
+                            <span class="plan-chip">@Model.TotalPlans paket katmanı</span>
+                            <span class="plan-chip">@Model.TotalPlayCount.ToString("N0") toplam dinleme</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+</body>
+</html>
