@@ -1,15 +1,15 @@
 <div align="center">
 
-🎧 SONARA
+# 🎧 SONARA
 
-Sanatçı Odaklı, Çok Katmanlı (Tiered) Üyelik ve SaaS Yönetim Mimarisine Sahip Dijital Müzik Platformu
+### Sanatçı Odaklı, Çok Katmanlı (Tiered) Üyelik ve SaaS Yönetim Mimarisine Sahip Dijital Müzik Platformu
 
 <p>
-  <img src="https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10" />
-  <img src="https://img.shields.io/badge/Azure-Blob%20Storage-0089D6?style=for-the-badge&logo=microsoftazure&logoColor=white" alt="Azure Blob Storage" />
-  <img src="https://img.shields.io/badge/Hangfire-Background%20Jobs-8A2BE2?style=for-the-badge" alt="Hangfire" />
-  <img src="https://img.shields.io/badge/JWT-Authentication-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" alt="JWT Authentication" />
-  <img src="https://img.shields.io/badge/SQL%20Server-2022-CC292B?style=for-the-badge&logo=microsoftsqlserver&logoColor=white" alt="SQL Server" />
+  <img src="https://img.shields.io/badge/.NET-10-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" />
+  <img src="https://img.shields.io/badge/Azure-Blob%20Storage-0089D6?style=for-the-badge&logo=microsoftazure&logoColor=white" />
+  <img src="https://img.shields.io/badge/Hangfire-Background%20Jobs-8A2BE2?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/JWT-Authentication-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+  <img src="https://img.shields.io/badge/SQL%20Server-2022-CC292B?style=for-the-badge&logo=microsoftsqlserver&logoColor=white" />
 </p>
 
 <p>
@@ -23,49 +23,46 @@ Sanatçı Odaklı, Çok Katmanlı (Tiered) Üyelik ve SaaS Yönetim Mimarisine S
 
 <br>
 
-Modern SaaS mimarisi, gelişmiş güvenlik yaklaşımı ve bulut tabanlı medya yönetimi ile geliştirilen dijital müzik platformu.
+> Modern SaaS mimarisi, gelişmiş güvenlik yaklaşımı ve bulut tabanlı medya yönetimi ile geliştirilen dijital müzik platformu.
 
-<!-- Proje ekran görüntünüzü ekleyin -->
+<br>
 
-<img width="1897" height="910" alt="Ekran görüntüsü 2026-08-25 125049" src="https://github.com/user-attachments/assets/b5768da8-64d5-4829-885d-227504ef87ac" />
+<img src="https://github.com/user-attachments/assets/b5768da8-64d5-4829-885d-227504ef87ac" width="100%" />
 
 </div>
 
-💡 Neden Sonara?
+---
+
+# 💡 Neden Sonara?
 
 Piyasadaki birçok müzik platformu örneği; yalnızca temel CRUD işlemlerini gerçekleştiren, basit kimlik doğrulaması kullanan ve gerçek üretim ortamlarında karşılaşılan ihtiyaçları göz ardı eden demo projelerden oluşmaktadır.
 
-Sonara, yalnızca bir müzik dinleme uygulaması değil; gerçek bir SaaS platformunun karşılaşacağı güvenlik, üyelik yönetimi, medya depolama ve oturum kontrolü problemlerini çözmek amacıyla geliştirildi.
+**Sonara**, yalnızca bir müzik dinleme uygulaması değil; gerçek bir SaaS platformunun karşılaşacağı güvenlik, üyelik yönetimi, medya depolama ve oturum kontrolü problemlerini çözmek amacıyla geliştirildi.
 
-Öne Çıkan Özellikler
+## ✨ Öne Çıkan Özellikler
 
-🛡️ Stateful Access Control
+| | |
+|:--|:--|
+| 🛡️ **Stateful Access Control** | JWT claim'lerine güvenmek yerine kritik isteklerde kullanıcının üyelik durumu, rolü ve aktifliği veritabanından yeniden doğrulanır. |
+| 🔄 **Otonom Arka Plan Görevleri** | Hangfire ile süresi dolan Premium üyelikler otomatik olarak **Free** seviyesine düşürülür. |
+| 📱 **Çoklu Cihaz Yönetimi** | Üyelik paketine göre cihaz limiti uygulanır. Limit aşıldığında en eski oturum (FIFO) otomatik sonlandırılır. |
+| ☁️ **Bulut Tabanlı Medya Yönetimi** | Şarkılar ve görseller Azure Blob Storage üzerinde saklanır ve CDN uyumlu çalışır. |
+| 🎨 **Modern Yönetim Paneli** | Hazır admin template'i kullanılmadan, Vercel & Linear tasarım anlayışıyla geliştirildi. |
+| 🚀 **Üretim Odaklı Mimari** | Katmanlı mimari, Repository Pattern ve API tabanlı iletişim sayesinde ölçeklenebilir yapı sunar. |
 
-JWT içerisinde bulunan claim'lere güvenmek yerine, kritik isteklerde kullanıcının üyelik durumu, rolü ve aktifliği veritabanından yeniden doğrulanır. Böylece üyelik değişiklikleri anında sisteme yansır.
+---
 
-🔄 Otonom Arka Plan Görevleri
+# 🏗️ Sistem Mimarisi
 
-Hangfire ile çalışan zamanlanmış görevler sayesinde süresi dolan Premium üyelikler otomatik olarak Free üyeliğe düşürülür ve sistem manuel müdahaleye ihtiyaç duymaz.
+> Sonara, kullanıcı arayüzü ile iş mantığını birbirinden tamamen ayıran **2-Tier Proxy & Repository Pattern** mimarisine sahiptir.
 
-📱 Çoklu Cihaz ve Oturum Yönetimi
+- **Sonara.WebUI** katmanı veritabanına **doğrudan erişmez**.
+- Tüm istekler güvenli **SonaraApiClient** üzerinden **Sonara.WebApi**'ye iletilir.
+- Veri erişimi Repository katmanı üzerinden gerçekleştirilir.
+- İş kuralları servis katmanında uygulanır.
+- Kimlik doğrulama JWT ve ASP.NET Core Identity ile yönetilir.
 
-Her üyelik paketi belirli sayıda aktif cihaz destekler. Limit aşıldığında sistem FIFO (First-In First-Out) mantığıyla en eski oturumu ve Refresh Token'ını otomatik olarak sonlandırır.
-
-☁️ Bulut Tabanlı Medya Yönetimi
-
-Şarkılar, albüm kapakları ve sanatçı görselleri uygulama sunucusunda değil, Azure Blob Storage üzerinde saklanır. Böylece yüksek ölçeklenebilirlik ve CDN uyumluluğu sağlanır.
-
-🎨 Modern Yönetim Paneli
-
-Hazır admin template'leri kullanılmadan, Vercel ve Linear tasarım anlayışından ilham alınarak tamamen özel geliştirilmiş yönetim paneli sunulmaktadır.
-
-🚀 Üretim Odaklı Mimari
-
-Katmanlı mimari, Repository Pattern, servis soyutlamaları ve API tabanlı iletişim sayesinde proje kolayca ölçeklenebilir ve sürdürülebilir yapıdadır.
-
-🏗️ Sistem Mimarisi
-
-Sonara, kullanıcı arayüzü ile iş mantığını birbirinden tamamen ayıran 2-Tier Proxy & Repository Pattern mimarisine sahiptir. Sonara.WebUI katmanı veritabanına asla doğrudan erişmez; tüm veri alışverişi güvenli SonaraApiClient aracılığıyla Sonara.WebApi üzerinden yürütülür.
+---
 
                                ┌─────────────────────────┐
                                │   Sonara.WebUI (MVC)    │
@@ -91,44 +88,61 @@ Sonara, kullanıcı arayüzü ile iş mantığını birbirinden tamamen ayıran 
             │   SQL Server Database     │
             └───────────────────────────┘
 
-🗂️ Proje Dizin Yapısı
+# 🗂️ Proje Dizin Yapısı
 
+```text
 Sonara.sln
-├── 📁 Sonara.CoreLayer         # Domain Entity'leri (Song, Artist, Playlist, MembershipPlan vb.)
-├── 📁 Sonara.DataAccessLayer   # DbContext, Entity Configurations, Migrations & Repository Impl.
-├── 📁 Sonara.DtoLayer          # Strict Request/Response DTO Kontratları
-├── 📁 Sonara.WebApi            # REST API, JWT Middleware, Identity Services & Hangfire Jobs
-└── 📁 Sonara.WebUI             # MVC Katmanı, Custom CSS Design System & API Client Proxy
+├── 📁 Sonara.CoreLayer
+│   └── Domain entity'leri (Song, Artist, Playlist, MembershipPlan vb.)
 
-⚡ Teknik Derinlik & Özellikler
+├── 📁 Sonara.DataAccessLayer
+│   └── DbContext, Entity Configurations, Migrations ve Repository Implementations
 
-🎧 Dinleyici & Kullanıcı Deneyimi
+├── 📁 Sonara.DtoLayer
+│   └── Request / Response DTO kontratları
 
-Kesintisiz Ses Akışı: Cihazlar arası kaldığı yerden devam edebilen, HTML5 Audio API tabanlı ses oynatıcısı.
+├── 📁 Sonara.WebApi
+│   └── REST API, JWT Authentication, Identity Services ve Hangfire Jobs
 
-Dinamik Metadata Ayıklama: Yüklenen MP3 dosyalarının süresi, bitrate ve kapak bilgileri TagLibSharp ile sunucu tarafında otomatize olarak okunur.
+└── 📁 Sonara.WebUI
+    └── ASP.NET Core MVC, Razor Views, API Client Proxy ve Custom CSS Design System
+```
 
-Ruh Haline Göre Keşif: Odaklan, Enerji, Yağmurlu, Yol Modu gibi parametrik ruh hali filtreleme altyapısı.
+---
 
-IDOR Korunmalı Playlist Yönetimi: Sadece ilgili kullanıcının müdahale edebildiği sahiplik doğrulama (Ownership Guard) altyapısı.
+# ⚡ Teknik Derinlik & Özellikler
 
-Brute-Force Koruması: 5 hatalı giriş denemesinde hesabı 10 dakika otomatik kilitleyen güvenlik politikası.
+## 🎧 Dinleyici Deneyimi
 
-💳 Tiered Membership (Çok Katmanlı Üyelik)
+| Özellik | Açıklama |
+|---------|----------|
+| 🎵 **Kesintisiz Ses Akışı** | HTML5 Audio API tabanlı oynatıcı ile cihazlar arasında kaldığı yerden devam eden müzik deneyimi. |
+| 🏷️ **Dinamik Metadata** | MP3 dosyalarının süre, bitrate ve kapak bilgileri TagLibSharp kullanılarak otomatik okunur. |
+| 🎯 **Ruh Haline Göre Keşif** | Enerji, Odaklan, Yol Modu, Yağmurlu gibi kategorilerle içerik keşfi. |
+| 🔒 **IDOR Koruması** | Playlist işlemlerinde Ownership Guard doğrulaması sayesinde yalnızca sahibi düzenleme yapabilir. |
+| 🛡️ **Brute Force Koruması** | 5 başarısız giriş denemesinden sonra hesap 10 dakika boyunca kilitlenir. |
 
-4 Seviyeli Erişim Katmanı: Free → Basic → Gold → Elite
+---
 
-Anlık Erişim Kısıtlaması: Yetki kapsamı dışındaki içeriklerde otomatik "Yükselt (Upgrade)" yönlendirme mekanizması.
+## 💳 Tiered Membership
 
-👑 SaaS Admin Paneli
+| Özellik | Açıklama |
+|---------|----------|
+| 👑 **4 Katmanlı Üyelik** | **Free → Basic → Gold → Elite** üyelik sistemi. |
+| 🚀 **Dinamik Yetkilendirme** | Yetkisi olmayan içeriklerde otomatik Premium yükseltme yönlendirmesi. |
 
-Gerçek Zamanlı Analitik: Katalog dağılımları ve dinleme istatistiklerini içeren dinamik dashboard.
+---
 
-Tam Kapsamlı CRUD: Şarkı, Sanatçı, Album ve Paket yönetimi.
+## 👨‍💼 SaaS Admin Paneli
 
-Sürükle-Brak Medya Yükleyici: Görsel ve ses dosyaları için asenkron bulut yükleme arayüzü.
+| Özellik | Açıklama |
+|---------|----------|
+| 📊 **Gerçek Zamanlı Dashboard** | Katalog dağılımları ve dinleme istatistiklerini gösteren yönetim paneli. |
+| ⚙️ **Tam Kapsamlı CRUD** | Şarkı, Sanatçı, Albüm ve Üyelik Paketleri yönetimi. |
+| ☁️ **Asenkron Medya Yükleme** | Azure Blob Storage destekli sürükle-bırak dosya yükleme sistemi. |
+| 🔐 **Rol Bazlı Yetkilendirme** | `[Authorize(Roles = "Admin")]` tabanlı erişim kontrolü. |
 
-Rol Bazlı Güvenlik: [Authorize(Roles = "Admin")] özniteliği ile tam yetki ayrıştırması.
+---
 
 ## 📸 Ekran Görüntüleri
 
@@ -217,82 +231,117 @@ Rol Bazlı Güvenlik: [Authorize(Roles = "Admin")] özniteliği ile tam yetki ay
 
 
 
-🛠️ Teknoloji Yığını
+# 🛠️ Teknoloji Yığını
 
-Backend & Sunucu Katmanı
+## ⚙️ Backend & Sunucu
 
-Framework: ASP.NET Core 10 Web API
+| Teknoloji | Açıklama |
+|-----------|----------|
+| **Framework** | ASP.NET Core 10 Web API |
+| **ORM** | Entity Framework Core 10 |
+| **Veritabanı** | SQL Server |
+| **Kimlik Doğrulama** | ASP.NET Core Identity + JWT Bearer (HttpOnly Cookie) |
+| **Arka Plan Görevleri** | Hangfire |
+| **Bulut Depolama** | Azure Blob Storage |
+| **Medya Metadata** | TagLibSharp |
+| **Object Mapping** | AutoMapper |
 
-ORM & DB: Entity Framework Core 10, SQL Server
+---
 
-Kimlik Doğrulama: ASP.NET Core Identity, JWT Bearer Tokens (HttpOnly Cookie Transport)
+## 🎨 Frontend & UI
 
-Arka Plan Görevleri: Hangfire
+| Teknoloji | Açıklama |
+|-----------|----------|
+| **Mimari** | ASP.NET Core MVC (Razor Views) |
+| **JavaScript** | Vanilla JavaScript (ES6+ Modules) |
+| **Styling** | Custom CSS Design System (Aero / Linear Dark Minimalist) |
 
-Bulut Depolama: Azure Blob Storage SDK
+---
 
-Medya Metadata: TagLibSharp
+# 🚀 Kurulum ve Yapılandırma
 
-Object Mapper: AutoMapper
+## 📋 Ön Gereksinimler
 
-Frontend & Arayüz Katmanı
+- .NET 10 SDK
+- SQL Server 2019+ veya LocalDB
+- Azure Storage Account *(veya Azurite Emulator)*
 
-Mimari: ASP.NET Core MVC (Razor Views)
+---
 
-Scripting: Pure Vanilla JS (ES6+ Native Modüller)
+## 1️⃣ Repoyu Klonlayın
 
-Styling: Custom CSS Design System (Aero/Linear Dark Minimalist Aesthetic)
-
-🚀 Kurulum ve Yapılandırma
-
-Ön Gereksinimler
-
-.NET 10 SDK
-
-SQL Server 2019+ / LocalDB
-
-Azure Storage Account (veya Azurite Emulator)
-
-Adım Adım Çalıştırma
-
-Repoyu Klonlayın:
-
+```bash
 git clone https://github.com/dilanderegozu/Sonara.git
 cd Sonara
+```
 
-User Secrets Yapılandırması (WebApi projesinde):
+---
 
+## 2️⃣ User Secrets Yapılandırması
+
+> **Sonara.WebApi** projesinde çalıştırın.
+
+```bash
 cd Sonara.WebApi
+
 dotnet user-secrets set "AzureStorage:ConnectionString" "<YOUR_AZURE_CONNECTION_STRING>"
+
 dotnet user-secrets set "JwtSettings:Secret" "<YOUR_LONG_JWT_SECRET_KEY>"
+```
 
-Veritabanı Migration'larını Uygulayın:
+---
 
+## 3️⃣ Veritabanını Oluşturun
+
+```bash
 dotnet ef database update --project ../Sonara.DataAccessLayer/Sonara.DataAccessLayer.csproj
+```
 
-Uygulamaları Başlatın:
+---
 
-# Terminal 1 - API Servisi
+## 4️⃣ Uygulamaları Başlatın
+
+### Terminal 1 — Web API
+
+```bash
 cd Sonara.WebApi
+
 dotnet run
+```
 
-# Terminal 2 - UI Servisi
+### Terminal 2 — Web UI
+
+```bash
 cd Sonara.WebUI
+
 dotnet run --launch-profile https
+```
 
-Tarayıcıda Açın:
+---
+
+## 5️⃣ Tarayıcıda Açın
+
+```text
 https://localhost:7113
+```
 
-🗺️ Yol Haritası (Roadmap)
+---
 
-Google / Spotify OAuth 2.0 ile Sosyal Giriş Entegrasyonu
+# 🗺️ Yol Haritası
 
-SignalR ile Admin Dashboard üzerinde Anlık Dinleyici Sayısı / Canlı Akış Metrikleri
+- [ ] Google & Spotify OAuth 2.0 ile Sosyal Giriş
+- [ ] SignalR ile Gerçek Zamanlı Admin Dashboard Metrikleri
+- [ ] CQRS & MediatR Mimarisi
+- [ ] Redis Distributed Cache Entegrasyonu
 
-CQRS & MediatR Deseni ile Admin Katmanının Yeniden Yapılandırılması
-
-Redis Distributed Caching ile Sık Dinlenen Şarkı Metadatalarının Önbelleğe Alınması
+---
 
 <div align="center">
-  <p>Designed & Developed with ❤️ by <strong>Dilan Deregözü</strong></p>
+
+### ⭐ Sonara
+
+Modern SaaS mimarisi, gelişmiş güvenlik ve bulut tabanlı medya yönetimiyle geliştirilen dijital müzik platformu.
+
+**Designed & Developed with ❤️ by Dilan Deregözü**
+
 </div>
